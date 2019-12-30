@@ -1,13 +1,19 @@
 import moment from 'moment';
+import R from 'ramda';
 import { Group, BillingGroup } from './group';
 import { getKeycloakAdminClient } from '../clients/keycloak-admin';
+import { getSqlClient, USE_SINGLETON } from '../clients/sqlClient';
+import { query } from '../util/db';
+import Sql from '../resources/billing/sql';
+
+
+import { projectEnvironmentsWithData } from '../models/environment';
 import {
-  handleAddBillingModifier,
-  handleGetBillingGroupModifiers,
-  handleUpdateBillingModifier,
-  handleDeleteBillingModifier,
-  handleDeleteAllBillingGroupModifier
-} from '../resources/billing/helpers';
+  calculateProjectEnvironmentsTotalsToBill,
+  getProjectsCosts,
+  BillingGroupCosts
+} from '../resources/billing/billingCalculations';
+
 
 import { GroupInput } from './group';
 
@@ -91,10 +97,15 @@ const prepareAddBillingModifierFromInput = async (
  * @return {BillingModifier} The created modifier
  */
 export const addBillingModifier = async (input: BillingModifierInput) => {
-  const { group, billingModifier } = await prepareAddBillingModifierFromInput(
-    input
+  const sqlClient = getSqlClient(USE_SINGLETON);
+
+  const { group, billingModifier } = await prepareAddBillingModifierFromInput( input );
+  const { info: { insertId } } = await query(sqlClient, Sql.addBillingModifier(billingModifier));
+  const rows = await query(
+    sqlClient,
+    Sql.selectBillingModifier(parseInt(insertId, 10))
   );
-  const result = await handleAddBillingModifier(billingModifier);
+  const result =  R.prop(0, rows) as BillingModifier;
 
   return { ...result, group } as BillingModifier;
 };
@@ -110,12 +121,21 @@ export const getBillingModifiers = async (
   groupInput: GroupInput,
   month: string
 ) => {
+  const sqlClient = getSqlClient(USE_SINGLETON);
   const keycloakAdminClient = await getKeycloakAdminClient();
   const GroupModel = Group({ keycloakAdminClient });
   const group = await GroupModel.loadGroupByIdOrName(groupInput);
 
-  const result = await handleGetBillingGroupModifiers(group.id, month);
+  const YEAR_MONTH = 'YYYY-MM-DD HH:mm:ss';
+  const monthStart = month
+    ? moment(new Date(month).toISOString()).startOf('month').format(YEAR_MONTH).toString()
+    : undefined;
+  const monthEnd = month
+    ? moment(new Date(month).toISOString()).endOf('month').format(YEAR_MONTH).toString()
+    : undefined;
 
+  const sql = Sql.getAllBillingModifierByBillingGroup(group.id, monthStart, monthEnd );
+  const result = (await query(sqlClient, sql)) as [BillingModifier];
   return result.map(modifier => ({ ...modifier, group }));
 };
 
@@ -158,11 +178,19 @@ export const updateBillingModifier = async (
   id: number,
   input: BillingModifier
 ) => {
-  const {
-    group,
-    billingModifier
-  } = await prepareUpdateBillingModifierFromInput(id, input);
-  const result = await handleUpdateBillingModifier(id, billingModifier);
+  const sqlClient = getSqlClient(USE_SINGLETON);
+
+  const { group, billingModifier: patch } = await prepareUpdateBillingModifierFromInput(id, input);
+  if (!R.isEmpty(patch)) {
+    await query(sqlClient, Sql.updateBillingModifier(id, patch));
+  }
+
+  const rows = await query(sqlClient, Sql.selectBillingModifier(id));
+  if (rows.length === 0) {
+    throw new Error('Billing modifier does not exist.');
+  }
+  const result =  R.prop(0, rows) as BillingModifier;
+
   return { ...result, group };
 };
 
@@ -173,8 +201,11 @@ export const updateBillingModifier = async (
  *
  * @return {BillingModifier} The created modifier
  */
-export const deleteBillingModifier = async (id: number) =>
-  handleDeleteBillingModifier(id);
+export const deleteBillingModifier = async (id: number) => {
+  const sqlClient = getSqlClient(USE_SINGLETON);
+  await query(sqlClient, Sql.deleteBillingModifier(id));
+  return 'success';
+}
 
 /**
  * Delete All Billing Modifiers for a Billing Group
@@ -190,7 +221,10 @@ export const deleteAllBillingGroupModifiers = async (
   const GroupModel = Group({ keycloakAdminClient });
   const group = await GroupModel.loadGroupByIdOrName(groupInput);
 
-  return handleDeleteAllBillingGroupModifier(group.id);
+  const sqlClient = getSqlClient(USE_SINGLETON);
+  const sql = Sql.deleteAllBillingModifiersByBillingGroup(group.id);
+  await query(sqlClient, sql);
+  return 'success';
 };
 
 export default {

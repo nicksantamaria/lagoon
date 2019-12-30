@@ -1,8 +1,3 @@
-import R from 'ramda';
-
-import { getSqlClient, USE_SINGLETON } from '../../clients/sqlClient';
-import Sql from './sql';
-import { query } from '../../util/db';
 import { projectEnvironmentsWithData } from '../../models/environment';
 import { BillingModifier } from '../../models/billing';
 import {
@@ -10,8 +5,7 @@ import {
   getProjectsCosts,
   BillingGroupCosts
 } from './billingCalculations';
-import { Group } from '../../models/group';
-import moment from 'moment';
+
 
 // helper function to split the input string
 export const extractMonthYear = yearMonth => {
@@ -78,76 +72,9 @@ export const availabiltyProjectsCosts = (
     : {}) as BillingGroupCosts;
 };
 
-export const handleAddBillingModifier = async (modifier: BillingModifier) => {
-  const sqlClient = getSqlClient(USE_SINGLETON);
-  const {
-    info: { insertId }
-  } = await query(sqlClient, Sql.addBillingModifier(modifier));
-  const rows = await query(
-    sqlClient,
-    Sql.selectBillingModifier(parseInt(insertId, 10))
-  );
-  return R.prop(0, rows) as BillingModifier;
-};
-
-export const handleGetBillingGroupModifiers = async (
-  group_id: string,
-  month: string
-) => {
-  const sqlClient = getSqlClient(USE_SINGLETON);
-
-  const YEAR_MONTH = 'YYYY-MM-DD HH:mm:ss';
-  const monthStart = month
-    ? moment(new Date(month).toISOString()).startOf('month').format(YEAR_MONTH).toString()
-    : undefined;
-  const monthEnd = month
-    ? moment(new Date(month).toISOString()).endOf('month').format(YEAR_MONTH).toString()
-    : undefined;
-
-  const sql = Sql.getAllBillingModifierByBillingGroup(
-    group_id,
-    monthStart,
-    monthEnd
-  );
-  const rows = await query(sqlClient, sql);
-  return rows as [BillingModifier];
-};
-
-export const handleUpdateBillingModifier = async (
-  id: number,
-  patch: BillingModifier
-) => {
-  const sqlClient = getSqlClient(USE_SINGLETON);
-  if (!R.isEmpty(patch)) {
-    await query(sqlClient, Sql.updateBillingModifier(id, patch));
-  }
-  const rows = await query(sqlClient, Sql.selectBillingModifier(id));
-  if (rows.length === 0) {
-    throw new Error('Billing modifier does not exist.');
-  }
-  return R.prop(0, rows) as BillingModifier;
-};
-
-export const handleDeleteBillingModifier = async (id: number) => {
-  const sqlClient = getSqlClient(USE_SINGLETON);
-  await query(sqlClient, Sql.deleteBillingModifier(id));
-  return 'success';
-};
-
-export const handleDeleteAllBillingGroupModifier = async (group_id: string) => {
-  const sqlClient = getSqlClient(USE_SINGLETON);
-  const sql = Sql.deleteAllBillingModifiersByBillingGroup(group_id);
-  await query(sqlClient, sql);
-  return 'success';
-}
-
 export default {
   extractMonthYear,
   projectWithBillingDataFn,
   getProjectsData,
   availabiltyProjectsCosts,
-  handleAddBillingModifier,
-  handleGetBillingGroupModifiers,
-  handleUpdateBillingModifier,
-  handleDeleteBillingModifier
 };
