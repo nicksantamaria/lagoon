@@ -8,9 +8,9 @@ import { projectsByGroup, Project } from './project';
 import {
   getProjectsData,
   availabilityProjectsCosts,
-  extractMonthYear,
-  handleGetBillingGroupModifiers
+  extractMonthYear
 } from '../resources/billing/helpers';
+import billingModel from './billing'
 
 interface IGroupAttributes {
   'lagoon-projects'?: [string];
@@ -640,8 +640,7 @@ export const Group = (clients): GroupModel => {
     }));
 
     const projects = await getProjectsData(initialProjects, yearMonth);
-
-    const modifiers = await handleGetBillingGroupModifiers(group.id, yearMonth);
+    const modifiers = await billingModel.getBillingModifiers(groupInput, month);
 
     const high = availabilityProjectsCosts(
       projects,

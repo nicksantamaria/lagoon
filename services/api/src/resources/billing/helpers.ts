@@ -64,7 +64,7 @@ export const availabilityProjectsCosts = (
   projects,
   availability,
   currency,
-  modifiers: [BillingModifier]
+  modifiers: BillingModifier[]
 ) => {
   const filteredProjects = projects.filter(availabilityFilterFn(availability));
   return (filteredProjects.length > 0
