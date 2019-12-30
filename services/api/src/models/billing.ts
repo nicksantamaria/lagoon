@@ -79,7 +79,7 @@ const prepareAddBillingModifierFromInput = async (
 
   return {
     group,
-    billingModifier: { ...rest, gid: group.id, startDate, endDate }
+    billingModifier: { ...rest, group_id: group.id, startDate, endDate }
   };
 };
 
@@ -130,7 +130,7 @@ const prepareUpdateBillingModifierFromInput = async (
   const group: BillingGroup | {} = isGroupInputExists
     ? (await loadGroup(input.group)).id
     : {};
-  const gid = isGroupInputExists ? { gid: (group as BillingGroup).id } : {};
+  const group_id = isGroupInputExists ? { group_id: (group as BillingGroup).id } : {};
 
   const startDate =
     typeof input != 'undefined' && input.startDate
@@ -143,7 +143,7 @@ const prepareUpdateBillingModifierFromInput = async (
 
   return {
     group,
-    billingModifier: { ...input, ...gid, ...startDate, ...endDate }
+    billingModifier: { ...input, ...group_id, ...startDate, ...endDate }
   };
 };
 

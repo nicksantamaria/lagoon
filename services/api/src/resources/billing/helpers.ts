@@ -91,7 +91,7 @@ export const handleAddBillingModifier = async (modifier: BillingModifier) => {
 };
 
 export const handleGetBillingGroupModifiers = async (
-  gid: string,
+  group_id: string,
   month: string
 ) => {
   const sqlClient = getSqlClient(USE_SINGLETON);
@@ -105,7 +105,7 @@ export const handleGetBillingGroupModifiers = async (
     : undefined;
 
   const sql = Sql.getAllBillingModifierByBillingGroup(
-    gid,
+    group_id,
     monthStart,
     monthEnd
   );
@@ -134,9 +134,9 @@ export const handleDeleteBillingModifier = async (id: number) => {
   return 'success';
 };
 
-export const handleDeleteAllBillingGroupModifier = async (gid: string) => {
+export const handleDeleteAllBillingGroupModifier = async (group_id: string) => {
   const sqlClient = getSqlClient(USE_SINGLETON);
-  const sql = Sql.deleteAllBillingModifiersByBillingGroup(gid);
+  const sql = Sql.deleteAllBillingModifiersByBillingGroup(group_id);
   await query(sqlClient, sql);
   return 'success';
 }
