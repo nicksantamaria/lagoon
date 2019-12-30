@@ -1027,7 +1027,7 @@ const typeDefs = gql`
 
 
 
-  input BillingModifierInput {
+  input AddBillingModifierInput {
     group: GroupInput!
     startDate: String!
     endDate: String!
@@ -1242,7 +1242,7 @@ const typeDefs = gql`
     removeProjectFromBillingGroup(input: ProjectBillingGroupInput): Project
     removeGroupsFromProject(input: ProjectGroupsInput!): Project
 
-    addBillingModifier(input: BillingModifierInput!): BillingModifier
+    addBillingModifier(input: AddBillingModifierInput!): BillingModifier
     updateBillingModifier(input: UpdateBillingModifierInput!): BillingModifier
     deleteBillingModifier(input: DeleteBillingModifierInput!): String
     deleteAllBillingModifiersByBillingGroup(input: GroupInput!): String
