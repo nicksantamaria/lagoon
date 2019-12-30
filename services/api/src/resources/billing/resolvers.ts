@@ -1,4 +1,6 @@
 import * as R from 'ramda';
+
+import convertDateToMYSQLDateTimeFormat from '../../util/convertDateToMYSQLDateTimeFormat';
 import billingModel, {
   AddBillingModifierInput,
   BillingModifier,
@@ -7,6 +9,9 @@ import billingModel, {
   DeleteBillingModifierInput,
   DeleteAllBillingGroupModifiersInput
 } from '../../models/billing';
+import { BillingGroup } from '../../models/group';
+
+
 
 /**
  * Create/Add Billing Modifier
@@ -28,7 +33,7 @@ export const addBillingModifier: AddBillingModifierAlias = async (
   args,
   context
 ) => {
-  const { hasPermission } = context;
+  const { models, hasPermission } = context;
   const { input } = args;
 
   // Input Validation
@@ -47,8 +52,17 @@ export const addBillingModifier: AddBillingModifierAlias = async (
   // Permissions
   await hasPermission('group', 'add');
 
+  const { group: groupInput, ...rest } = input;
+
+  const group = await models.GroupModel.loadGroupByIdOrName(groupInput)
+
+  const startDate = convertDateToMYSQLDateTimeFormat(rest.startDate);
+  const endDate = convertDateToMYSQLDateTimeFormat(rest.endDate);
+
+  const billingModifier =  { ...rest, group_id: group.id, startDate, endDate }
+
   // Action
-  return billingModel.addBillingModifier(input);
+  return billingModel.addBillingModifier(group, billingModifier);
 };
 
 /**
@@ -66,16 +80,36 @@ export const updateBillingModifier = async (
   args: UpdateBillingModifierInput,
   context: { models: any; hasPermission: any }
 ) => {
-  const { hasPermission } = context;
-  const {
-    input: { id, patch }
-  } = args;
+  const { hasPermission, models } = context;
+  const { input, input: { id, patch, patch: { group: groupInput, ...rest  }} } = args;
+
+  if (R.isEmpty(input.patch)) {
+    throw new Error('You must provide patch');
+  }
 
   // Permissions
   await hasPermission('group', 'update');
 
-  // Action
-  return billingModel.updateBillingModifier(id, patch);
+  const isGroupInputExists = typeof input != 'undefined' && input.patch && groupInput && (groupInput.id || groupInput.name);
+  const group: BillingGroup | {} = isGroupInputExists
+    ? (await models.GroupModel.loadGroupByIdOrName(groupInput))
+    : {};
+  const group_id = isGroupInputExists ? { group_id: (group as BillingGroup).id } : {};
+
+  const startDate =
+    typeof input != 'undefined' && patch.startDate
+      ? { startDate: convertDateToMYSQLDateTimeFormat(patch.startDate) }
+      : {};
+  const endDate =
+    typeof input != 'undefined' && patch.endDate
+      ? { endDate: convertDateToMYSQLDateTimeFormat(patch.endDate) }
+      : {};
+
+  const billingModifier =  { ...rest, ...group_id, ...startDate, ...endDate };
+  const result = await billingModel.updateBillingModifier(id, billingModifier, group);
+
+  console.log(result);
+  return result;
 };
 
 /**

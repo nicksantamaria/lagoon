@@ -249,7 +249,7 @@ describe('Billing Modifiers', () => {
       expect(result.length).toBeGreaterThan(0);
     });
 
-    it('When I update a modifier via a graphql mutation, I expect the updates to be saved in the database.', async () => {
+    it('When I update a modifier via a graphql mutation, I expect the updates to be saved in the database. #add #update', async () => {
       // Arrange
       const addedModifier = await addBillingModifier({
         ...defaultModifier,

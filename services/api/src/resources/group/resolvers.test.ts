@@ -506,7 +506,6 @@ describe('Billing Group Costs Related Queries & Mutation', () => {
       const expected = {
         "data": {
           "billingGroupCost": {
-            "id": "1e38e12b-5b3a-4b16-86d6-7cb0cdd5e528",
             "name": "High Cotton Billing Group",
             "currency": "USD",
             "availability": "HIGH",

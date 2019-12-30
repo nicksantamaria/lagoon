@@ -4,15 +4,8 @@ import { Group, BillingGroup } from './group';
 import { getKeycloakAdminClient } from '../clients/keycloak-admin';
 import { getSqlClient, USE_SINGLETON } from '../clients/sqlClient';
 import { query } from '../util/db';
+import convertDateToMYSQLDateTimeFormat from '../util/convertDateToMYSQLDateTimeFormat'
 import Sql from '../resources/billing/sql';
-
-
-import { projectEnvironmentsWithData } from '../models/environment';
-import {
-  calculateProjectEnvironmentsTotalsToBill,
-  getProjectsCosts,
-  BillingGroupCosts
-} from '../resources/billing/billingCalculations';
 
 
 import { GroupInput } from './group';
@@ -20,6 +13,7 @@ import { GroupInput } from './group';
 export interface BillingModifier {
   id?: number;
   group?: Group | GroupInput;
+  groupId?: string;
   startDate?: string;
   endDate?: string;
   discountFixed?: number;
@@ -61,34 +55,6 @@ export interface DeleteAllBillingGroupModifiersInput {
   input: GroupInput;
 }
 
-const loadGroup = async (group: GroupInput) => {
-  const keycloakAdminClient = await getKeycloakAdminClient();
-  const GroupModel = Group({ keycloakAdminClient });
-  return GroupModel.loadGroupByIdOrName(group);
-};
-
-export const convertDateToMYSQLDateTimeFormat = (date: string) => {
-  const DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
-  return moment(new Date(date).toISOString())
-    .format(DATE_FORMAT)
-    .toString();
-};
-
-const prepareAddBillingModifierFromInput = async (
-  input: BillingModifierInput
-) => {
-  const { group: groupInput, ...rest } = input;
-  const group = await loadGroup(groupInput);
-
-  const startDate = convertDateToMYSQLDateTimeFormat(rest.startDate);
-  const endDate = convertDateToMYSQLDateTimeFormat(rest.endDate);
-
-  return {
-    group,
-    billingModifier: { ...rest, group_id: group.id, startDate, endDate }
-  };
-};
-
 /**
  * Create/Add Billing Modifier
  *
@@ -96,10 +62,8 @@ const prepareAddBillingModifierFromInput = async (
  *
  * @return {BillingModifier} The created modifier
  */
-export const addBillingModifier = async (input: BillingModifierInput) => {
+export const addBillingModifier = async (group: Group, billingModifier: BillingModifier) => {
   const sqlClient = getSqlClient(USE_SINGLETON);
-
-  const { group, billingModifier } = await prepareAddBillingModifierFromInput( input );
   const { info: { insertId } } = await query(sqlClient, Sql.addBillingModifier(billingModifier));
   const rows = await query(
     sqlClient,
@@ -139,34 +103,6 @@ export const getBillingModifiers = async (
   return result.map(modifier => ({ ...modifier, group }));
 };
 
-const prepareUpdateBillingModifierFromInput = async (
-  id: number,
-  input: BillingModifier
-) => {
-  const isGroupInputExists =
-    typeof input != 'undefined' &&
-    input.group &&
-    (input.group.id || input.group.name);
-  const group: BillingGroup | {} = isGroupInputExists
-    ? (await loadGroup(input.group)).id
-    : {};
-  const group_id = isGroupInputExists ? { group_id: (group as BillingGroup).id } : {};
-
-  const startDate =
-    typeof input != 'undefined' && input.startDate
-      ? { startDate: convertDateToMYSQLDateTimeFormat(input.startDate) }
-      : {};
-  const endDate =
-    typeof input != 'undefined' && input.endDate
-      ? { endDate: convertDateToMYSQLDateTimeFormat(input.endDate) }
-      : {};
-
-  return {
-    group,
-    billingModifier: { ...input, ...group_id, ...startDate, ...endDate }
-  };
-};
-
 /**
  * Update Billing Modifier
  *
@@ -176,11 +112,12 @@ const prepareUpdateBillingModifierFromInput = async (
  */
 export const updateBillingModifier = async (
   id: number,
-  input: BillingModifier
+  patch?: BillingModifier,
+  group?: Group | {},
 ) => {
   const sqlClient = getSqlClient(USE_SINGLETON);
-
-  const { group, billingModifier: patch } = await prepareUpdateBillingModifierFromInput(id, input);
+  const keycloakAdminClient = await getKeycloakAdminClient();
+  const GroupModel = Group({ keycloakAdminClient });
   if (!R.isEmpty(patch)) {
     await query(sqlClient, Sql.updateBillingModifier(id, patch));
   }
@@ -189,9 +126,16 @@ export const updateBillingModifier = async (
   if (rows.length === 0) {
     throw new Error('Billing modifier does not exist.');
   }
-  const result =  R.prop(0, rows) as BillingModifier;
 
-  return { ...result, group };
+  const {groupId, ...rest} = R.prop(0, rows) as BillingModifier;
+
+  if (R.isEmpty(group)){
+    const loadedGroup: BillingGroup = await GroupModel.loadGroupByIdOrName({id: groupId});
+    return {...rest, group: loadedGroup}
+  }else {
+    return {...rest, group }
+  }
+
 };
 
 /**
