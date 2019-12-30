@@ -23,7 +23,7 @@ import { availabilityProjectsCosts } from './helpers';
 import { defaultModifier } from './resolvers.test';
 import {
   initializeGraphQL,
-  billingModifiers,
+  allBillingModifiers,
   addBillingModifier,
   deleteBillingModifier,
   deleteAllBillingModifiers
@@ -879,39 +879,39 @@ describe('Billing Calculations', () => {
       // Act
 
       // Get all modifiers for the billingGroup for last month
-      const { data: lastMonthData } = await billingModifiers(
+      const { data: lastMonthData } = await allBillingModifiers(
         defaultModifier.group,
         lastMonth
       );
-      if (!lastMonthData.data.billingModifiers) {
+      if (!lastMonthData.data.allBillingModifiers) {
         throw new Error(lastMonthData.errors[0].message);
       }
       const {
-        data: { billingModifiers: lastMonthBillingGroupModifiers }
+        data: { allBillingModifiers: lastMonthBillingGroupModifiers }
       } = lastMonthData;
 
       // Get all modifiers for the billing group for next month
-      const { data: nextMonthData } = await billingModifiers(
+      const { data: nextMonthData } = await allBillingModifiers(
         defaultModifier.group,
         nextMonth
       );
-      if (!nextMonthData.data.billingModifiers) {
+      if (!nextMonthData.data.allBillingModifiers) {
         throw new Error(nextMonthData.errors[0].message);
       }
       const {
-        data: { billingModifiers: nextMonthBillingGroupModifiers }
+        data: { allBillingModifiers: nextMonthBillingGroupModifiers }
       } = nextMonthData;
 
       // Get all modifiers for the current month
-      const { data: currMonthData } = await billingModifiers(
+      const { data: currMonthData } = await allBillingModifiers(
         defaultModifier.group,
         currMonth
       );
-      if (!currMonthData.data.billingModifiers) {
+      if (!currMonthData.data.allBillingModifiers) {
         throw new Error(currMonthData.errors[0].message);
       }
       const {
-        data: { billingModifiers: currMonthBillingGroupModifiers }
+        data: { allBillingModifiers: currMonthBillingGroupModifiers }
       } = currMonthData;
 
       // Request costs for last month
@@ -981,20 +981,20 @@ describe('Billing Calculations', () => {
       // Act
 
       // Get all modifiers for the billingGroup for last month
-      const { data: { data: { billingModifiers: lastMonthBillingGroupModifiers } } }
-        = await billingModifiers( defaultModifier.group, lastMonth);
+      const { data: { data: { allBillingModifiers: lastMonthBillingGroupModifiers } } }
+        = await allBillingModifiers( defaultModifier.group, lastMonth);
 
       // Get all modifiers for the billing group for next month
-      const { data: { data: { billingModifiers: nextMonthBillingGroupModifiers } } }
-        = await billingModifiers(defaultModifier.group, nextMonth);
+      const { data: { data: { allBillingModifiers: nextMonthBillingGroupModifiers } } }
+        = await allBillingModifiers(defaultModifier.group, nextMonth);
 
       // Get all modifiers for the billing group for next year
-      const { data: { data: { billingModifiers: nextYearBillingGroupModifiers } } }
-        = await billingModifiers(defaultModifier.group, nextYear);
+      const { data: { data: { allBillingModifiers: nextYearBillingGroupModifiers } } }
+        = await allBillingModifiers(defaultModifier.group, nextYear);
 
       // Get all modifiers for the current month
-      const { data: { data: { billingModifiers: currMonthBillingGroupModifiers } } }
-        = await billingModifiers(defaultModifier.group, currMonth);
+      const { data: { data: { allBillingModifiers: currMonthBillingGroupModifiers } } }
+        = await allBillingModifiers(defaultModifier.group, currMonth);
 
       // Assert
 
@@ -1029,7 +1029,7 @@ describe('Billing Calculations', () => {
 
       // Get all modifiers for the current month
       const currMonth = moment().format('YYYY-MM').toString();
-      const { data: { data: { billingModifiers: modifiers } } } = await billingModifiers( defaultModifier.group, currMonth);
+      const { data: { data: { allBillingModifiers: modifiers } } } = await allBillingModifiers( defaultModifier.group, currMonth);
 
       // Act
 

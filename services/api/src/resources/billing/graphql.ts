@@ -43,7 +43,7 @@ export const initializeGraphQL = async () => {
 
 type DataResult = {
   data: {
-    billingModifiers: [BillingModifier];
+    allBillingModifiers: [BillingModifier];
     addBillingModifier: BillingModifier;
     updateBillingModifier: BillingModifier;
     deleteBillingModifier: String;
@@ -95,9 +95,9 @@ mutation deleteAllBillingModifiers($input: GroupInput!){
 }
 `
 
-const BILLING_MODIFIERS = `
-  query billingModifiers($input: GroupInput!, $month: String) {
-    billingModifiers(input: $input, month: $month){
+const ALL_BILLING_MODIFIERS = `
+  query allBillingModifiers($input: GroupInput!, $month: String) {
+    allBillingModifiers(input: $input, month: $month){
       ${BILLING_MODIFIER_FIELDS}
     }
   }
@@ -115,6 +115,6 @@ export const addBillingModifier = ( billingModifier: BillingModifierInput) => gr
 export const updateBillingModifier = (id: Number, patch: BillingModifier) => graphql(UPDATE_BILLING_MODIFIER, { input: {id, patch } })
 export const deleteBillingModifier = (id: Number) => graphql(DELETE_BILLING_MODIFIER, { input : { id } });
 export const deleteAllBillingModifiers = (group: GroupInput) => graphql(DELETE_ALL_BILLING_MODIFIERS, { input : group });
-export const billingModifiers = (group: GroupInput, month?: string) => graphql(BILLING_MODIFIERS, { input : group, month });
+export const allBillingModifiers = (group: GroupInput, month?: string) => graphql(ALL_BILLING_MODIFIERS, { input : group, month });
 
 export const addBillingGroup = (billingGroup: BillingGroup) => graphql(ADD_BILLING_GROUP, { input: billingGroup });

@@ -271,7 +271,7 @@ const resolvers /* : { [string]: ResolversObj | typeof GraphQLDate } */ = {
     allProjectsInGroup: getAllProjectsInGroup,
     billingGroupCost: getBillingGroupCost,
     allBillingGroupsCost: getAllBillingGroupsCost,
-    billingModifiers: getBillingModifiers
+    allBillingModifiers: getBillingModifiers
   },
   Mutation: {
     addOrUpdateEnvironment,

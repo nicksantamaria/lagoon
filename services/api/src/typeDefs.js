@@ -580,7 +580,7 @@ const typeDefs = gql`
     """
     Returns the Billing Group Modifiers for a given Billing Group (all if no month filter defined)
     """
-    billingModifiers(input: GroupInput!, month: String): [BillingModifier]
+    allBillingModifiers(input: GroupInput!, month: String): [BillingModifier]
   }
 
   # Must provide id OR name

@@ -15,7 +15,7 @@ import moment from 'moment';
 import {
   initializeGraphQL,
   addBillingModifier,
-  billingModifiers,
+  allBillingModifiers,
   updateBillingModifier,
   deleteBillingModifier,
   deleteAllBillingModifiers,
@@ -111,16 +111,16 @@ describe('Billing Modifiers', () => {
       } = await addBillingModifier(defaultModifier);
 
       // Act
-      const { data } = await billingModifiers({
+      const { data } = await allBillingModifiers({
         name: 'High Cotton Billing Group'
       });
 
-      if (!data.data.billingModifiers) {
+      if (!data.data.allBillingModifiers) {
         throw new Error(data.errors[0].message);
       }
 
       const {
-        data: { billingModifiers: result }
+        data: { allBillingModifiers: result }
       } = data;
       const last = result.length - 1;
 
@@ -163,14 +163,14 @@ describe('Billing Modifiers', () => {
       }
 
       // Act
-      const { data } = await billingModifiers({ name });
+      const { data } = await allBillingModifiers({ name });
 
-      if (!data.data.billingModifiers) {
+      if (!data.data.allBillingModifiers) {
         throw new Error(data.errors[0].message);
       }
 
       const {
-        data: { billingModifiers: result }
+        data: { allBillingModifiers: result }
       } = data;
 
       // Assert
@@ -192,16 +192,16 @@ describe('Billing Modifiers', () => {
       });
 
       // Act
-      const { data } = await billingModifiers(
+      const { data } = await allBillingModifiers(
         { name: defaultModifier.group.name },
         '05-10-1978'
       );
-      if (!data.data.billingModifiers) {
+      if (!data.data.allBillingModifiers) {
         throw new Error(data.errors[0].message);
       }
 
       const {
-        data: { billingModifiers: result }
+        data: { allBillingModifiers: result }
       } = data;
 
       // Assert
@@ -234,15 +234,15 @@ describe('Billing Modifiers', () => {
       });
 
       // Act
-      const { data } = await billingModifiers({
+      const { data } = await allBillingModifiers({
         name: defaultModifier.group.name
       });
-      if (!data.data.billingModifiers) {
+      if (!data.data.allBillingModifiers) {
         throw new Error(data.errors[0].message);
       }
 
       const {
-        data: { billingModifiers: result }
+        data: { allBillingModifiers: result }
       } = data;
 
       // Assert
