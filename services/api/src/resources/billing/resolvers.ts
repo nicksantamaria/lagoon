@@ -1,6 +1,12 @@
 import * as R from 'ramda';
-import billingModel, { AddBillingModifierInput, BillingModifier, BillingModifiersInput, UpdateBillingModifierInput, DeleteBillingModifierInput, DeleteAllBillingGroupModifiersInput } from '../../models/billing';
-
+import billingModel, {
+  AddBillingModifierInput,
+  BillingModifier,
+  BillingModifiersInput,
+  UpdateBillingModifierInput,
+  DeleteBillingModifierInput,
+  DeleteAllBillingGroupModifiersInput
+} from '../../models/billing';
 
 /**
  * Create/Add Billing Modifier
@@ -12,8 +18,16 @@ import billingModel, { AddBillingModifierInput, BillingModifier, BillingModifier
  *
  * @return {BillingModifier} The created modifier
  */
-type AddBillingModifierAlias = (root: any, args: AddBillingModifierInput, context: {models: any, hasPermission: any}) => Promise<BillingModifier>;
-export const addBillingModifier: AddBillingModifierAlias = async (root, args, context) => {
+type AddBillingModifierAlias = (
+  root: any,
+  args: AddBillingModifierInput,
+  context: { models: any; hasPermission: any }
+) => Promise<BillingModifier>;
+export const addBillingModifier: AddBillingModifierAlias = async (
+  root,
+  args,
+  context
+) => {
   const { hasPermission } = context;
   const { input } = args;
 
@@ -26,7 +40,7 @@ export const addBillingModifier: AddBillingModifierAlias = async (root, args, co
     throw new Error('You must provide a discount value or extra cost.');
   }
 
-  if( new Date(input.startDate) >= new Date(input.endDate)) {
+  if (new Date(input.startDate) >= new Date(input.endDate)) {
     throw new Error('You must provide a start date before the end date.');
   }
 
@@ -47,16 +61,22 @@ export const addBillingModifier: AddBillingModifierAlias = async (root, args, co
  *
  * @return {String} Success
  */
-export const updateBillingModifier = async (_, args: UpdateBillingModifierInput, context: {models: any, hasPermission: any}) => {
+export const updateBillingModifier = async (
+  _,
+  args: UpdateBillingModifierInput,
+  context: { models: any; hasPermission: any }
+) => {
   const { hasPermission } = context;
-  const { input : { id, patch } } = args;
+  const {
+    input: { id, patch }
+  } = args;
 
   // Permissions
   await hasPermission('group', 'update');
 
   // Action
   return billingModel.updateBillingModifier(id, patch);
-}
+};
 
 /**
  * Delete Billing Modifier
@@ -71,18 +91,19 @@ export const updateBillingModifier = async (_, args: UpdateBillingModifierInput,
 export const deleteBillingModifier = async (
   _,
   args: DeleteBillingModifierInput,
-  context: {models: any,
-  hasPermission: any}
+  context: { models: any; hasPermission: any }
 ) => {
   const { hasPermission } = context;
-  const { input: { id } } = args;
+  const {
+    input: { id }
+  } = args;
 
   // Permissions
   await hasPermission('group', 'delete');
 
   // Action
   return billingModel.deleteBillingModifier(id);
-}
+};
 
 /**
  * Delete All Billing Modifiers for a given Billing Gropu
@@ -97,8 +118,7 @@ export const deleteBillingModifier = async (
 export const deleteAllBillingModifiersByBillingGroup = async (
   _,
   args: DeleteAllBillingGroupModifiersInput,
-  context: {models: any,
-  hasPermission: any}
+  context: { models: any; hasPermission: any }
 ) => {
   const { hasPermission } = context;
   const { input } = args;
@@ -106,10 +126,9 @@ export const deleteAllBillingModifiersByBillingGroup = async (
   // Permissions
   await hasPermission('group', 'delete');
 
-
   // Action
   return billingModel.deleteAllBillingGroupModifiers(input);
-}
+};
 
 /**
  * Get All Billing Modifiers Added to a Billing Group
@@ -121,7 +140,11 @@ export const deleteAllBillingModifiersByBillingGroup = async (
  *
  * @return {[BillingModifier]} All modifiers associated to the billing Group
  */
-export const getBillingModifiers = async (_, args: BillingModifiersInput, context: {models: any, hasPermission: any}) => {
+export const getBillingModifiers = async (
+  _,
+  args: BillingModifiersInput,
+  context: { models: any; hasPermission: any }
+) => {
   const { hasPermission } = context;
   const { input: groupInput, month } = args;
 
@@ -130,7 +153,7 @@ export const getBillingModifiers = async (_, args: BillingModifiersInput, contex
 
   // Action
   return billingModel.getBillingModifiers(groupInput, month);
-}
+};
 
 export const getAllModifiersByGroupId = async (root, input, context) =>
   getBillingModifiers(root, { input: { id: root.id } }, { ...context });
