@@ -19,7 +19,7 @@ import {
   getProjectsCosts,
   BillingGroupCosts
 } from './billingCalculations';
-import { availabiltyProjectsCosts } from './helpers';
+import { availabilityProjectsCosts } from './helpers';
 import { defaultModifier } from './resolvers.test';
 import {
   initializeGraphQL,
@@ -815,7 +815,7 @@ describe('Billing Calculations', () => {
       // The call graph starts with the function below
       // src/models/group.ts > billingGroupCost calls `availabilityProjectCosts(projects, 'HIGH|STANDARD', currency, modifiers)`
 
-      // Arrange 
+      // Arrange
 
       const startDate = moment()
         .startOf('month')
@@ -915,7 +915,7 @@ describe('Billing Calculations', () => {
       } = currMonthData;
 
       // Request costs for last month
-      const lastMonthCosts = availabiltyProjectsCosts(
+      const lastMonthCosts = availabilityProjectsCosts(
         mockProjects,
         AVAILABILITY.STANDARD,
         CURRENCIES.CHF,
@@ -923,7 +923,7 @@ describe('Billing Calculations', () => {
       ) as BillingGroupCosts;
 
       // Request costs for next month
-      const nextMonthCosts = availabiltyProjectsCosts(
+      const nextMonthCosts = availabilityProjectsCosts(
         mockProjects,
         AVAILABILITY.STANDARD,
         CURRENCIES.CHF,
@@ -931,7 +931,7 @@ describe('Billing Calculations', () => {
       );
 
       // Request costs for current month
-      const currMonthCosts = availabiltyProjectsCosts(
+      const currMonthCosts = availabilityProjectsCosts(
         mockProjects,
         AVAILABILITY.STANDARD,
         CURRENCIES.CHF,
@@ -953,7 +953,7 @@ describe('Billing Calculations', () => {
     });
 
     it('Given a Billing modifier that expires far in the future, and another modifier for a single month, ensure that both modifiers are applied for the single month, and that only the long running modifier is applied outside of the single modifier month. #modifiers, #future', async () => {
-      
+
       // Arrange
       const foreverStartDate = moment().startOf('month').format('MM-DD-YYYY');
       const foreverEndDate = moment().add(100, 'years').format('MM-DD-YYYY');
@@ -981,22 +981,22 @@ describe('Billing Calculations', () => {
       // Act
 
       // Get all modifiers for the billingGroup for last month
-      const { data: { data: { billingModifiers: lastMonthBillingGroupModifiers } } } 
+      const { data: { data: { billingModifiers: lastMonthBillingGroupModifiers } } }
         = await billingModifiers( defaultModifier.group, lastMonth);
 
       // Get all modifiers for the billing group for next month
-      const { data: { data: { billingModifiers: nextMonthBillingGroupModifiers } } } 
+      const { data: { data: { billingModifiers: nextMonthBillingGroupModifiers } } }
         = await billingModifiers(defaultModifier.group, nextMonth);
 
       // Get all modifiers for the billing group for next year
-      const { data: { data: { billingModifiers: nextYearBillingGroupModifiers } } } 
+      const { data: { data: { billingModifiers: nextYearBillingGroupModifiers } } }
         = await billingModifiers(defaultModifier.group, nextYear);
 
       // Get all modifiers for the current month
-      const { data: { data: { billingModifiers: currMonthBillingGroupModifiers } } } 
+      const { data: { data: { billingModifiers: currMonthBillingGroupModifiers } } }
         = await billingModifiers(defaultModifier.group, currMonth);
 
-      // Assert 
+      // Assert
 
       expect(lastMonthBillingGroupModifiers.length).toBe(0);
       expect(nextMonthBillingGroupModifiers.length).toBe(1);
@@ -1008,8 +1008,8 @@ describe('Billing Calculations', () => {
 
 
     it('Given a single, or multiple, Billing modifiers that would generage a negative total, ensure it does not go below 0 (zero). #belowZero', async() => {
-      
-      // Arrange 
+
+      // Arrange
       const startDate = moment().startOf('month').format('MM-DD-YYYY');
       const endDate = moment().endOf('month').format('MM-DD-YYYY');
       const modifier = { ...defaultModifier, startDate, endDate, discountFixed: 100_000};
@@ -1034,7 +1034,7 @@ describe('Billing Calculations', () => {
       // Act
 
       // Costs for current month
-      const currMonthCosts = availabiltyProjectsCosts( mockProjects, AVAILABILITY.STANDARD, CURRENCIES.CHF, modifiers );
+      const currMonthCosts = availabilityProjectsCosts( mockProjects, AVAILABILITY.STANDARD, CURRENCIES.CHF, modifiers );
 
       // Assert
       expect(currMonthCosts.modifiers.length).toBe(1);

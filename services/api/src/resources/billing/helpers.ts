@@ -60,7 +60,7 @@ const availabilityFilterFn = filterKey => ({ availability }) =>
  *
  * @return {BillingGroupCosts} An object includeing all availability costs
  */
-export const availabiltyProjectsCosts = (
+export const availabilityProjectsCosts = (
   projects,
   availability,
   currency,
@@ -76,5 +76,5 @@ export default {
   extractMonthYear,
   projectWithBillingDataFn,
   getProjectsData,
-  availabiltyProjectsCosts,
+  availabilityProjectsCosts,
 };

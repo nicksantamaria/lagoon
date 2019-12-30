@@ -7,7 +7,7 @@ import { User } from './user';
 import { projectsByGroup, Project } from './project';
 import {
   getProjectsData,
-  availabiltyProjectsCosts,
+  availabilityProjectsCosts,
   extractMonthYear,
   handleGetBillingGroupModifiers
 } from '../resources/billing/helpers';
@@ -643,13 +643,13 @@ export const Group = (clients): GroupModel => {
 
     const modifiers = await handleGetBillingGroupModifiers(group.id, yearMonth);
 
-    const high = availabiltyProjectsCosts(
+    const high = availabilityProjectsCosts(
       projects,
       'HIGH',
       currency,
       modifiers
     );
-    const standard = availabiltyProjectsCosts(
+    const standard = availabilityProjectsCosts(
       projects,
       'STANDARD',
       currency,
