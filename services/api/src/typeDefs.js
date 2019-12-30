@@ -578,7 +578,7 @@ const typeDefs = gql`
     """
     allBillingGroupsCost(month: String!): JSON
     """
-    Returns the Billing Group Modifiers for a given Billing Group (all if no month filter defined)
+    Returns the Billing Group Modifiers for a given Billing Group (all modifiers for the Billing Group will be returned if the month is not provided)
     """
     allBillingModifiers(input: GroupInput!, month: String): [BillingModifier]
   }
