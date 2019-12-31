@@ -70,7 +70,7 @@ const graphql: AxiosGraphQL = async (query: String, variables?: any) => {
 const BILLING_MODIFIER_FIELDS = 'id, group { id, name, type }, startDate, endDate, discountFixed, discountPercentage, extraFixed, extraPercentage, customerComments, adminComments';
 
 const ADD_BILLING_MODIFIER = `
-  mutation addBillingModifier($input: BillingModifierInput!) {
+  mutation addBillingModifier($input: AddBillingModifierInput!) {
     addBillingModifier(input: $input){
       ${BILLING_MODIFIER_FIELDS}
     }
