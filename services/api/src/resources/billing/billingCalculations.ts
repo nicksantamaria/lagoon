@@ -95,19 +95,18 @@ export const getProjectsCosts = (currency, projects, modifiers: BillingModifier[
   const environmentCost = { prod, dev };
 
   // Apply Modifiers
-  let total = hitCost + storage + prod + dev;
-  modifiers
-    .sort((a:BillingModifier, b:BillingModifier) => a.weight < b.weight? -1 : 1)
-    .forEach(modifier => {
-    const { discountFixed, extraFixed, discountPercentage, extraPercentage  } = modifier;
+  const modifiersSortFn = (a:BillingModifier, b:BillingModifier) => a.weight < b.weight? -1 : 1
+  const reducerFn: (previousValue: number, currentValue: BillingModifier) => number =
+  (total, modifier) => {
+    const { discountFixed, extraFixed, discountPercentage, extraPercentage } = modifier;
     total = discountFixed ? total - discountFixed : total;
     total = extraFixed ? total + extraFixed : total;
     total = discountPercentage ? total - (total * (discountPercentage / 100)) : total;
     total = extraPercentage ? total + (total * (extraPercentage / 100)) : total;
-  });
-
-  // Ensure we don't have negative totals
-  total = Math.max(0, total);
+    return total;
+  }
+  const subTotal = hitCost + storage + prod + dev;
+  const total = Math.max(0, modifiers.sort(modifiersSortFn).reduce(reducerFn, subTotal));
 
   return ({
     hitCost,
