@@ -75,6 +75,30 @@ export const addBillingModifier = async (group: Group, billingModifier: BillingM
 };
 
 /**
+ * Get Billing Modifier By ID
+ *
+ * @param {Int} id The modifier values
+ *
+ * @return {BillingModifier} The modifier
+ */
+export const getBillingModifier = async (
+  id: number,
+) => {
+  const sqlClient = getSqlClient(USE_SINGLETON);
+  const keycloakAdminClient = await getKeycloakAdminClient();
+  const GroupModel = Group({ keycloakAdminClient });
+
+  const rows = await query(sqlClient, Sql.selectBillingModifier(id));
+  if (rows.length === 0) {
+    throw new Error('Billing modifier does not exist.');
+  }
+
+  const {groupId, ...rest} = R.prop(0, rows) as BillingModifier;
+  const group: BillingGroup = await GroupModel.loadGroupByIdOrName({id: groupId});
+  return {...rest, group};
+};
+
+/**
  * Get All Billing Modifiers for a Billing Group
  *
  * @param {BillingModifierInput} input The modifier values
@@ -135,7 +159,6 @@ export const updateBillingModifier = async (
   }else {
     return {...rest, group }
   }
-
 };
 
 /**

@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-
+import * as logger from '../../logger';
 import convertDateToMYSQLDateTimeFormat from '../../util/convertDateToMYSQLDateTimeFormat';
 import billingModel, {
   AddBillingModifierInput,
@@ -7,7 +7,8 @@ import billingModel, {
   BillingModifiersInput,
   UpdateBillingModifierInput,
   DeleteBillingModifierInput,
-  DeleteAllBillingGroupModifiersInput
+  DeleteAllBillingGroupModifiersInput,
+  getBillingModifier,
 } from '../../models/billing';
 import { BillingGroup } from '../../models/group';
 
@@ -54,7 +55,7 @@ export const addBillingModifier: AddBillingModifierAlias = async (
 
   const { group: groupInput, ...rest } = input;
 
-  const group = await models.GroupModel.loadGroupByIdOrName(groupInput)
+  const group = await models.GroupModel.loadGroupByIdOrName(groupInput);
 
   const startDate = convertDateToMYSQLDateTimeFormat(rest.startDate);
   const endDate = convertDateToMYSQLDateTimeFormat(rest.endDate);
@@ -87,14 +88,15 @@ export const updateBillingModifier = async (
     throw new Error('You must provide patch');
   }
 
-  // Permissions
-  await hasPermission('group', 'update');
 
   const isGroupInputExists = typeof input != 'undefined' && input.patch && groupInput && (groupInput.id || groupInput.name);
   const group: BillingGroup | {} = isGroupInputExists
-    ? (await models.GroupModel.loadGroupByIdOrName(groupInput))
-    : {};
+  ? (await models.GroupModel.loadGroupByIdOrName(groupInput))
+  : {};
   const group_id = isGroupInputExists ? { group_id: (group as BillingGroup).id } : {};
+
+  // Permissions
+  await hasPermission('group', 'update', {group: group_id});
 
   const startDate =
     typeof input != 'undefined' && patch.startDate
@@ -106,10 +108,7 @@ export const updateBillingModifier = async (
       : {};
 
   const billingModifier =  { ...rest, ...group_id, ...startDate, ...endDate };
-  const result = await billingModel.updateBillingModifier(id, billingModifier, group);
-
-  console.log(result);
-  return result;
+  return billingModel.updateBillingModifier(id, billingModifier, group);
 };
 
 /**
@@ -132,8 +131,10 @@ export const deleteBillingModifier = async (
     input: { id }
   } = args;
 
+  const { group } = await getBillingModifier(id);
+
   // Permissions
-  await hasPermission('group', 'delete');
+  await hasPermission('group', 'delete', { group: group.id });
 
   // Action
   return billingModel.deleteBillingModifier(id);
@@ -154,14 +155,16 @@ export const deleteAllBillingModifiersByBillingGroup = async (
   args: DeleteAllBillingGroupModifiersInput,
   context: { models: any; hasPermission: any }
 ) => {
-  const { hasPermission } = context;
-  const { input } = args;
+  const { hasPermission, models } = context;
+  const { input: groupInput } = args;
+
+  const group = await models.GroupModel.loadGroupByIdOrName(groupInput)
 
   // Permissions
-  await hasPermission('group', 'delete');
+  await hasPermission('group', 'delete', {group: group.id});
 
   // Action
-  return billingModel.deleteAllBillingGroupModifiers(input);
+  return billingModel.deleteAllBillingGroupModifiers(groupInput);
 };
 
 /**
@@ -177,16 +180,25 @@ export const deleteAllBillingModifiersByBillingGroup = async (
 export const getBillingModifiers = async (
   _,
   args: BillingModifiersInput,
-  context: { models: any; hasPermission: any }
+  context: { models: any; hasPermission: any, keycloakGrant: any }
 ) => {
-  const { hasPermission } = context;
+  const { hasPermission, models, keycloakGrant } = context;
   const { input: groupInput, month } = args;
 
-  // Permissions
-  await hasPermission('group', 'view');
+  try {
+    // Permissions
+    await hasPermission('group', 'viewAll');
 
-  // Action
-  return billingModel.getBillingModifiers(groupInput, month);
+    // Action
+    return billingModel.getBillingModifiers(groupInput, month);
+  } catch (err) {
+    if (!keycloakGrant) {
+      logger.warn('No grant available for getBillingModifiers');
+      return [];
+    }
+
+    throw new Error('User does not have viewAll permissions for this group.');
+  }
 };
 
 export const getAllModifiersByGroupId = async (root, input, context) =>
