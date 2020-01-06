@@ -1,18 +1,37 @@
 import * as R from 'ramda';
 import * as logger from '../../logger';
 import convertDateToMYSQLDateTimeFormat from '../../util/convertDateToMYSQLDateTimeFormat';
-import billingModel, {
-  AddBillingModifierInput,
-  BillingModifier,
-  BillingModifiersInput,
-  UpdateBillingModifierInput,
-  DeleteBillingModifierInput,
-  DeleteAllBillingGroupModifiersInput,
-  getBillingModifier,
-} from '../../models/billing';
-import { BillingGroup } from '../../models/group';
+import billingModel, { BillingModifier, getBillingModifier, BillingModifierBase } from '../../models/billing';
+import { BillingGroup, GroupInput } from '../../models/group';
+export interface BillingModifierInput extends BillingModifierBase {
+  group: GroupInput;
+}
 
+interface AddBillingModifierInput {
+  input: BillingModifierInput;
+}
 
+interface UpdateBillingModifierInput {
+  input: {
+    id: number;
+    patch: BillingModifier;
+  };
+}
+
+interface BillingModifiersInput {
+  input: GroupInput;
+  month?: string;
+}
+
+interface DeleteBillingModifierInput {
+  input: {
+    id: number;
+  };
+}
+
+interface DeleteAllBillingGroupModifiersInput {
+  input: GroupInput;
+}
 
 /**
  * Create/Add Billing Modifier
@@ -30,7 +49,7 @@ type AddBillingModifierAlias = (
   context: { models: any; hasPermission: any }
 ) => Promise<BillingModifier>;
 export const addBillingModifier: AddBillingModifierAlias = async (
-  root,
+  _,
   args,
   context
 ) => {
@@ -60,10 +79,10 @@ export const addBillingModifier: AddBillingModifierAlias = async (
   const startDate = convertDateToMYSQLDateTimeFormat(rest.startDate);
   const endDate = convertDateToMYSQLDateTimeFormat(rest.endDate);
 
-  const billingModifier =  { ...rest, group_id: group.id, startDate, endDate }
-
+  const modifier = { ...rest, groupId: group.id, startDate, endDate };
+  const result = await billingModel.addBillingModifier(modifier);
   // Action
-  return billingModel.addBillingModifier(group, billingModifier);
+  return ({ ...result, group })
 };
 
 /**
@@ -85,18 +104,13 @@ export const updateBillingModifier = async (
   const { input, input: { id, patch, patch: { group: groupInput, ...rest  }} } = args;
 
   if (R.isEmpty(input.patch)) {
-    throw new Error('You must provide patch');
+    throw new Error('You must provide a patch');
   }
 
-
-  const isGroupInputExists = typeof input != 'undefined' && input.patch && groupInput && (groupInput.id || groupInput.name);
-  const group: BillingGroup | {} = isGroupInputExists
-  ? (await models.GroupModel.loadGroupByIdOrName(groupInput))
-  : {};
-  const group_id = isGroupInputExists ? { group_id: (group as BillingGroup).id } : {};
+  const existingModifier = await getBillingModifier(id);
 
   // Permissions
-  await hasPermission('group', 'update', {group: group_id});
+  await hasPermission('group', 'update', {group: existingModifier.group.id});
 
   const startDate =
     typeof input != 'undefined' && patch.startDate
@@ -107,8 +121,8 @@ export const updateBillingModifier = async (
       ? { endDate: convertDateToMYSQLDateTimeFormat(patch.endDate) }
       : {};
 
-  const billingModifier =  { ...rest, ...group_id, ...startDate, ...endDate };
-  return billingModel.updateBillingModifier(id, billingModifier, group);
+  const modifier = { id, ...rest, groupId: existingModifier.group.id, ...startDate, ...endDate };
+  return billingModel.updateBillingModifier(modifier);
 };
 
 /**

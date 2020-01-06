@@ -22,8 +22,8 @@ export const Sql = {
         .toString();
   },
   // update
-  updateBillingModifier: (id: number, patch: BillingModifier) =>
-    knex(BILLING_MODIFIER_TABLE).where('id', '=', id).update(patch).toString(),
+  updateBillingModifier: (id: number, modifier: BillingModifier) =>
+    knex(BILLING_MODIFIER_TABLE).where('id', '=', id).update(modifier).toString(),
   // delete
   deleteBillingModifier: (id: number) =>
     knex(BILLING_MODIFIER_TABLE).where('id', '=', id).delete().toString(),

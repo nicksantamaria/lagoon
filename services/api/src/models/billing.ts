@@ -4,15 +4,11 @@ import { Group, BillingGroup } from './group';
 import { getKeycloakAdminClient } from '../clients/keycloak-admin';
 import { getSqlClient, USE_SINGLETON } from '../clients/sqlClient';
 import { query } from '../util/db';
-import convertDateToMYSQLDateTimeFormat from '../util/convertDateToMYSQLDateTimeFormat'
 import Sql from '../resources/billing/sql';
+import { GroupInput } from "./group";
 
-
-import { GroupInput } from './group';
-
-export interface BillingModifier {
+export interface BillingModifierBase {
   id?: number;
-  group?: Group | GroupInput;
   groupId?: string;
   startDate?: string;
   endDate?: string;
@@ -24,35 +20,8 @@ export interface BillingModifier {
   adminComments?: string;
   weight?: number;
 }
-
-export interface BillingModifierInput extends BillingModifier {
-  group: GroupInput;
-}
-
-export interface AddBillingModifierInput {
-  input: BillingModifierInput;
-}
-
-export interface UpdateBillingModifierInput {
-  input: {
-    id: number;
-    patch: BillingModifier;
-  };
-}
-
-export interface BillingModifiersInput {
-  input: GroupInput;
-  month?: string;
-}
-
-export interface DeleteBillingModifierInput {
-  input: {
-    id: number;
-  };
-}
-
-export interface DeleteAllBillingGroupModifiersInput {
-  input: GroupInput;
+export interface BillingModifier extends BillingModifierBase{
+  group?: Group;
 }
 
 /**
@@ -62,16 +31,14 @@ export interface DeleteAllBillingGroupModifiersInput {
  *
  * @return {BillingModifier} The created modifier
  */
-export const addBillingModifier = async (group: Group, billingModifier: BillingModifier) => {
+export const addBillingModifier = async (modifier: BillingModifier) => {
   const sqlClient = getSqlClient(USE_SINGLETON);
-  const { info: { insertId } } = await query(sqlClient, Sql.addBillingModifier(billingModifier));
+  const { info: { insertId } } = await query(sqlClient, Sql.addBillingModifier(modifier));
   const rows = await query(
     sqlClient,
     Sql.selectBillingModifier(parseInt(insertId, 10))
   );
-  const result =  R.prop(0, rows) as BillingModifier;
-
-  return { ...result, group } as BillingModifier;
+  return R.prop(0, rows) as BillingModifier;
 };
 
 /**
@@ -106,13 +73,13 @@ export const getBillingModifier = async (
  * @return {[BillingModifier]} The created modifier
  */
 export const getBillingModifiers = async (
-  groupInput: GroupInput,
+  groupNameOrId: GroupInput,
   month: string
 ) => {
   const sqlClient = getSqlClient(USE_SINGLETON);
   const keycloakAdminClient = await getKeycloakAdminClient();
   const GroupModel = Group({ keycloakAdminClient });
-  const group = await GroupModel.loadGroupByIdOrName(groupInput);
+  const group = await GroupModel.loadGroupByIdOrName(groupNameOrId);
 
   const YEAR_MONTH = 'YYYY-MM-DD HH:mm:ss';
   const monthStart = month
@@ -134,31 +101,10 @@ export const getBillingModifiers = async (
  *
  * @return {BillingModifier} The created modifier
  */
-export const updateBillingModifier = async (
-  id: number,
-  patch?: BillingModifier,
-  group?: Group | {},
-) => {
+export const updateBillingModifier = async (modifier: BillingModifier ) => {
   const sqlClient = getSqlClient(USE_SINGLETON);
-  const keycloakAdminClient = await getKeycloakAdminClient();
-  const GroupModel = Group({ keycloakAdminClient });
-  if (!R.isEmpty(patch)) {
-    await query(sqlClient, Sql.updateBillingModifier(id, patch));
-  }
-
-  const rows = await query(sqlClient, Sql.selectBillingModifier(id));
-  if (rows.length === 0) {
-    throw new Error('Billing modifier does not exist.');
-  }
-
-  const {groupId, ...rest} = R.prop(0, rows) as BillingModifier;
-
-  if (R.isEmpty(group)){
-    const loadedGroup: BillingGroup = await GroupModel.loadGroupByIdOrName({id: groupId});
-    return {...rest, group: loadedGroup}
-  }else {
-    return {...rest, group }
-  }
+  await query(sqlClient, Sql.updateBillingModifier(modifier.id, modifier));
+  return getBillingModifier(modifier.id);
 };
 
 /**

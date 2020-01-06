@@ -1,7 +1,8 @@
 import { promisify } from 'util';
 import axios, { AxiosResponse, AxiosInstance } from 'axios';
-import { BillingModifier, BillingModifierInput } from '../../models/billing';
+import { BillingModifier } from '../../models/billing';
 import { GroupInput, BillingGroup } from '../../models/group';
+import { BillingModifierInput } from './resolvers';
 
 const exec = promisify(require('child_process').exec);
 

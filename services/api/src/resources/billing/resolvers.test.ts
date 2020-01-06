@@ -23,9 +23,8 @@ import {
 } from './graphql';
 import {
   BillingModifierInput,
-} from '../../models/billing';
+} from './resolvers';
 import { BillingGroup } from '../../models/group';
-import { deleteGroup } from '../project/keycloak';
 
 export const defaultModifier: BillingModifierInput = {
   group: { name: 'High Cotton Billing Group' },
