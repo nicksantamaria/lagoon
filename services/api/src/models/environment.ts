@@ -4,6 +4,8 @@ import { getSqlClient, USE_SINGLETON } from '../clients/sqlClient';
 import * as esClient from '../clients/esClient';
 import { prepare, query } from '../util/db';
 
+import * as logger from '../logger';
+
 export interface Environment {
   id?: number; // int(11) NOT NULL AUTO_INCREMENT,
   name?: string; // varchar(100) COLLATE utf8_bin DEFAULT NULL,
@@ -74,7 +76,8 @@ export const environmentsByProjectId = projectEnvironments;
 
 // Needed for local Dev - Required if not connected to openshift
 export const errorCatcherFn = (msg, responseObj) => err => {
-  console.log(`${msg}: ${err.status} : ${err.message}`);
+  const errMsg = err && err.status && err.message ? `${err.status} : ${err.message}` : `err undefined`;
+  logger.error(`${msg}: ${errMsg}`);
   return { ...responseObj };
 };
 
@@ -95,7 +98,7 @@ export const environmentData = async (
   const hits = await environmentHitsMonthByEnvironmentId(
     openshiftProjectName,
     month,
-  ).catch(errorCatcherFn('getHits', { total: 0 }));
+  ).catch(errorCatcherFn(`getHits - openShiftProjectName: ${openshiftProjectName} month: ${month}`, { total: 0 }));
 
   const storage = await environmentStorageMonthByEnvironmentId(
     eid,
