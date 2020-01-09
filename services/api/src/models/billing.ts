@@ -27,7 +27,7 @@ export interface BillingModifier extends BillingModifierBase{
 /**
  * Create/Add Billing Modifier
  *
- * @param {AddBillingModifierInput} input The modifier values
+ * @param {BillingModifier} modifier The modifier values
  *
  * @return {BillingModifier} The created modifier
  */
@@ -68,7 +68,7 @@ export const getBillingModifier = async (
 /**
  * Get All Billing Modifiers for a Billing Group
  *
- * @param {BillingModifierInput} input The modifier values
+ * @param {BillingModifierInput} groupNameOrId The Group Name or ID
  *
  * @return {[BillingModifier]} The created modifier
  */
@@ -97,7 +97,7 @@ export const getBillingModifiers = async (
 /**
  * Update Billing Modifier
  *
- * @param {UpdateBillingModifierInput} input The modifier values
+ * @param {BillingModifier} modifier The modifier values
  *
  * @return {BillingModifier} The created modifier
  */
@@ -110,7 +110,7 @@ export const updateBillingModifier = async (modifier: BillingModifier ) => {
 /**
  * Delete Billing Modifier
  *
- * @param {DeleteBillingModifierInput} input The modifier values
+ * @param {number} id The modifier id
  *
  * @return {BillingModifier} The created modifier
  */
@@ -123,16 +123,16 @@ export const deleteBillingModifier = async (id: number) => {
 /**
  * Delete All Billing Modifiers for a Billing Group
  *
- * @param {GroupInput} input The Billing Group
+ * @param {GroupInput} groupNameOrId The Billing Group Name or ID
  *
  * @return {Boolean} Success
  */
 export const deleteAllBillingGroupModifiers = async (
-  groupInput: GroupInput
+  groupNameOrId: GroupInput
 ) => {
   const keycloakAdminClient = await getKeycloakAdminClient();
   const GroupModel = Group({ keycloakAdminClient });
-  const group = await GroupModel.loadGroupByIdOrName(groupInput);
+  const group = await GroupModel.loadGroupByIdOrName(groupNameOrId);
 
   const sqlClient = getSqlClient(USE_SINGLETON);
   const sql = Sql.deleteAllBillingModifiersByBillingGroup(group.id);
