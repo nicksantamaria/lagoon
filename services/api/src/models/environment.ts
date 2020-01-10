@@ -1,7 +1,7 @@
 import moment from 'moment';
 
 import { getSqlClient, USE_SINGLETON } from '../clients/sqlClient';
-import * as esClient from '../clients/esClient';
+import esClient from '../clients/esClient';
 import { prepare, query } from '../util/db';
 
 import * as logger from '../logger';
@@ -95,18 +95,14 @@ export const environmentData = async (
   month: string,
   openshiftProjectName: string,
 ) => {
-  const hits = await environmentHitsMonthByEnvironmentId(
-    openshiftProjectName,
-    month,
-  ).catch(errorCatcherFn(`getHits - openShiftProjectName: ${openshiftProjectName} month: ${month}`, { total: 0 }));
+  const hits = await environmentHitsMonthByEnvironmentId(openshiftProjectName, month)
+    .catch(errorCatcherFn(`getHits - openShiftProjectName: ${openshiftProjectName} month: ${month}`, { total: 0 }));
 
-  const storage = await environmentStorageMonthByEnvironmentId(
-    eid,
-    month,
-  ).catch(errorCatcherFn('getStorage', { bytesUsed: 0 }));
-  const hours = await environmentHoursMonthByEnvironmentId(eid, month).catch(
-    errorCatcherFn('getHours', { hours: 0 }),
-  );
+  const storage = await environmentStorageMonthByEnvironmentId(eid, month)
+    .catch(errorCatcherFn('getStorage', { bytesUsed: 0 }));
+
+  const hours = await environmentHoursMonthByEnvironmentId(eid, month)
+    .catch(errorCatcherFn('getHours', { hours: 0 }));
 
   return { hits, storage, hours };
 };
@@ -153,9 +149,6 @@ export const projectEnvironmentsWithData: projectEnvWithDataType = async (
   return environments.map(environmentsMapFn);
 };
 
-
-// TODO - This is a TS version of the same method found in /Users/justinwinter/Projects/lagoon/services/api/src/resources/environment/resolvers.js
-// This is probably not ideal and there should be a single approach.
 export const environmentStorageMonthByEnvironmentId = async (eid, month) => {
   const str = `
     SELECT
@@ -301,12 +294,17 @@ export const environmentHitsMonthByEnvironmentId = async (
     };
     return response;
   } catch (e) {
-    if (
-      e.body && e.body.error && e.body.error.type &&
-      (e.body.error.type === 'index_not_found_exception' || e.body.error.type === 'security_exception')
-    ) {
-      return { total: 0 };
+    logger.error(`Elastic Search Query Error: ${JSON.stringify(e)}`);
+    const noHits = { total: 0 };
+
+    if(e.body === "Open Distro Security not initialized."){
+      return noHits;
     }
+
+    if (e.body && e.body.error && e.body.error.type && (e.body.error.type === 'index_not_found_exception' || e.body.error.type === 'security_exception')) {
+      return noHits;
+    }
+
     throw e;
   }
 };
