@@ -34,10 +34,11 @@ tasks:
         name: update database schema
         command: /rerun_initdb.sh
         service: api-db
-    - run:
-        name: 'enable shard allocation on elasticsearch'
-        command: es-curl PUT _cluster/settings -d '{"persistent":{"cluster.routing.allocation.enable":null}}'
-        service: logs-db
+    # disabled on testing/billing
+    # - run:
+    #     name: 'enable shard allocation on elasticsearch'
+    #     command: es-curl PUT _cluster/settings -d '{"persistent":{"cluster.routing.allocation.enable":null}}'
+    #     service: logs-db
 
 environments:
   master:
