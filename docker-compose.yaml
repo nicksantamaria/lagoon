@@ -35,7 +35,7 @@ services:
       - ./services/webhook-handler/src:/app/services/webhook-handler/src
       - ./node-packages:/app/node-packages:delegated
     labels:
-      lagoon.type: custom
+      lagoon.type: none
       lagoon.template: services/webhook-handler/.lagoon.app.yml
       lagoon.image: amazeeiolagoon/webhook-handler:testing-billing
   broker:
@@ -341,7 +341,7 @@ services:
     ports:
       - '8087:8080'
     labels:
-      lagoon.type: custom
+      lagoon.type: none
       lagoon.template: services/drush-alias/.lagoon.app.yml
       lagoon.image: amazeeiolagoon/drush-alias:testing-billing
       version: '2'
