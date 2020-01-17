@@ -161,6 +161,7 @@ const typeDefs = gql`
     projects: [Project]
     currency: String
     billingSoftware: String
+    modifiers: [BillingModifier]
   }
 
   type Openshift {
@@ -499,6 +500,20 @@ const typeDefs = gql`
     files: [File]
   }
 
+  type BillingModifier {
+    id: Int
+    group: BillingGroup
+    startDate: String
+    endDate: String
+    discountFixed: Float
+    discountPercentage: Float
+    extraFixed: Float
+    extraPercentage: Float
+    customerComments: String
+    adminComments: String
+    weight: Int
+  }
+
   input DeleteEnvironmentInput {
     name: String!
     project: String!
@@ -517,7 +532,7 @@ const typeDefs = gql`
     """
     Returns Group Object by a given name
     """
-    groupByName(name: String!): Group
+    groupByName(name: String!): GroupInterface
     """
     Returns Project Object by a given gitUrl (only the first one if there are multiple)
     """
@@ -562,6 +577,10 @@ const typeDefs = gql`
     Returns the costs for all billing groups
     """
     allBillingGroupsCost(month: String!): JSON
+    """
+    Returns the Billing Group Modifiers for a given Billing Group (all modifiers for the Billing Group will be returned if the month is not provided)
+    """
+    allBillingModifiers(input: GroupInput!, month: String): [BillingModifier]
   }
 
   # Must provide id OR name
@@ -1006,6 +1025,43 @@ const typeDefs = gql`
     parentGroup: GroupInput
   }
 
+
+
+  input AddBillingModifierInput {
+    group: GroupInput!
+    startDate: String!
+    endDate: String!
+    discountFixed: Float
+    discountPercentage: Float
+    extraFixed: Float
+    extraPercentage: Float
+    customerComments: String
+    adminComments: String!
+    weight: Int
+  }
+
+  input BillingModifierPatchInput {
+    group: GroupInput
+    startDate: String
+    endDate: String
+    discountFixed: Float
+    discountPercentage: Float
+    extraFixed: Float
+    extraPercentage: Float
+    customerComments: String
+    adminComments: String
+    weight: Int
+  }
+
+  input UpdateBillingModifierInput {
+    id: Int!
+    patch: BillingModifierPatchInput!
+  }
+
+  input DeleteBillingModifierInput {
+    id: Int!
+  }
+
   input UpdateGroupPatchInput {
     name: String
   }
@@ -1171,12 +1227,12 @@ const typeDefs = gql`
     deployEnvironmentBranch(input: DeployEnvironmentBranchInput!): String
     deployEnvironmentPullrequest(input: DeployEnvironmentPullrequestInput!): String
     deployEnvironmentPromote(input: DeployEnvironmentPromoteInput!): String
-    addGroup(input: AddGroupInput!): Group
-    updateGroup(input: UpdateGroupInput!): Group
+    addGroup(input: AddGroupInput!): GroupInterface
+    updateGroup(input: UpdateGroupInput!): GroupInterface
     deleteGroup(input: DeleteGroupInput!): String
     deleteAllGroups: String
-    addUserToGroup(input: UserGroupRoleInput!): Group
-    removeUserFromGroup(input: UserGroupInput!): Group
+    addUserToGroup(input: UserGroupRoleInput!): GroupInterface
+    removeUserFromGroup(input: UserGroupInput!): GroupInterface
     addGroupsToProject(input: ProjectGroupsInput): Project
     addBillingGroup(input: BillingGroupInput!): BillingGroup
     updateBillingGroup(input: UpdateBillingGroupInput!): BillingGroup
@@ -1185,6 +1241,11 @@ const typeDefs = gql`
     updateProjectBillingGroup(input: ProjectBillingGroupInput): Project
     removeProjectFromBillingGroup(input: ProjectBillingGroupInput): Project
     removeGroupsFromProject(input: ProjectGroupsInput!): Project
+
+    addBillingModifier(input: AddBillingModifierInput!): BillingModifier
+    updateBillingModifier(input: UpdateBillingModifierInput!): BillingModifier
+    deleteBillingModifier(input: DeleteBillingModifierInput!): String
+    deleteAllBillingModifiersByBillingGroup(input: GroupInput!): String
   }
 
   type Subscription {

@@ -10244,9 +10244,9 @@ jws@^3.2.2:
     jwa "^1.4.1"
     safe-buffer "^5.0.1"
 
-"keycloak-admin@https://github.com/amazeeio/keycloak-admin.git\\#allow-more-customization":
+"keycloak-admin@https://github.com/amazeeio/keycloak-admin.git#bd015d2e34634f262c0827f00620657427e3c252":
   version "1.12.0"
-  resolved "https://github.com/amazeeio/keycloak-admin.git\\#bd015d2e34634f262c0827f00620657427e3c252"
+  resolved "https://github.com/amazeeio/keycloak-admin.git#bd015d2e34634f262c0827f00620657427e3c252"
   dependencies:
     "@types/debug" "^0.0.30"
     axios "^0.18.0"
