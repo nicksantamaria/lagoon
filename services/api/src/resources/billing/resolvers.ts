@@ -70,7 +70,7 @@ export const addBillingModifier: AddBillingModifierAlias = async (
   }
 
   // Permissions
-  await hasPermission('group', 'add');
+  await hasPermission('billing_modifier', 'add');
 
   const { group: groupInput, ...rest } = input;
 
@@ -110,7 +110,7 @@ export const updateBillingModifier = async (
   const existingModifier = await getBillingModifier(id);
 
   // Permissions
-  await hasPermission('group', 'update', {group: existingModifier.group.id});
+  await hasPermission('billing_modifier', 'update', {group: existingModifier.group.id});
 
   const startDate =
     typeof input != 'undefined' && patch.startDate
@@ -148,7 +148,7 @@ export const deleteBillingModifier = async (
   const { group } = await getBillingModifier(id);
 
   // Permissions
-  await hasPermission('group', 'delete', { group: group.id });
+  await hasPermission('billing_modifier', 'delete', { group: group.id });
 
   // Action
   return billingModel.deleteBillingModifier(id);
@@ -175,7 +175,7 @@ export const deleteAllBillingModifiersByBillingGroup = async (
   const group = await models.GroupModel.loadGroupByIdOrName(groupInput)
 
   // Permissions
-  await hasPermission('group', 'delete', {group: group.id});
+  await hasPermission('billing_modifier', 'delete', {group: group.id});
 
   // Action
   return billingModel.deleteAllBillingGroupModifiers(groupInput);
