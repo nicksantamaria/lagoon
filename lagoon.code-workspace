@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "services/api"
+		},
+		{
+			"path": "services/ui"
+		}
+	],
+	"settings": {
+		"git.ignoreLimitWarning": true,
+		"javascript.validate.enable": false
+	}
+}
