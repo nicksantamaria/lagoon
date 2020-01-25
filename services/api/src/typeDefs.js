@@ -1032,15 +1032,45 @@ const typeDefs = gql`
 
 
   input AddBillingModifierInput {
+    """
+    The existing billing group for this modifier
+    """
     group: GroupInput!
+    """
+    The date this modifier should start to be applied - Format: YYYY-MM-DD
+    """
     startDate: String!
+    """
+    The date this modifer will expire - Format: YYYY-MM-DD
+    """
     endDate: String!
+    """
+    The amount that the total monthly bill should be discounted - Format (Int)
+    """
     discountFixed: Float
+    """
+    The percentage the total monthly bill should be discounted - Format (0-100)
+    """
     discountPercentage: Float
+    """
+    The amount of exta cost that should be added to the total- Format (Int)
+    """
     extraFixed: Float
+    """
+    The percentage the total monthly bill should be added - Format (0-100)
+    """
     extraPercentage: Float
+    """
+    Customer comments are visible to the customer
+    """
     customerComments: String
+    """
+    Admin comments will not be visible to the customer.
+    """
     adminComments: String!
+    """
+    The order this modifer should be applied
+    """
     weight: Int
   }
 

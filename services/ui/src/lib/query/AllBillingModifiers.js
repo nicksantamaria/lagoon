@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 
-gql`
+export default gql`
   query allBillingModifiers($input:GroupInput!){
     allBillingModifiers(input: $input){
       id, 

@@ -1,45 +1,86 @@
+import * as R from 'ramda';
 import React from 'react';
 import css from 'styled-jsx/css';
 import Button from '../Button';
+import { Mutation, Query } from 'react-apollo';
+
+import AllBillingModifiersQuery from 'lib/query/AllBillingModifiers';
+import DeleteBillingModifierMutation from 'lib/mutation/DeleteBillingModifier';
+
+import withQueryLoading from 'lib/withQueryLoading';
+import withQueryError from 'lib/withQueryError';
 
 import { bp, color, fontSize } from 'lib/variables';
+import { json } from 'body-parser';
 
-const BillingModifiers = ({ modifiers }) => (
+const AllBillingModifiers = ({group, modifiers}) => (
   <div className="modifiers">
+    <h2>All Billing Modifiers</h2>
     <div className="header">
       <label className="dates">Dates</label>
       <label className="value">Value</label>
       <label className="comments">Comments</label>
     </div>
-    <div className="data-table">
-      {!modifiers.length && <div className="data-none">No Billing Modifiers</div>}
-      { modifiers.sort((a, b) => a.weight < b.weight ? -1 : 1).map(({
-        id
-        startDate,
-        endDate,
-        discountFixed,
-        discountPercentage,
-        extraFixed,
-        extraPercentage,
-        customerComments,
-        adminComments,
-        weight
-      }) => (
-          <div className="data-row" key={id}>
-            <div className="dates">{startDate} - {endDate}</div>
-            <div className="modifierValue">
-              {discountFixed ? `Discount: ${discountFixed}` : ''},
-              {discountPercentage ? `Discount: ${discountPercentage} %` : ''},
-              {extraFixed ? `Extra: ${extraFixed}` : ''},
-              {extraPercentage ? `Extra: ${extraPercentage} %` : ''},
-            </div>
-            <div className="customerComments">{customerComments}</div>
-            <div className="adminComments">{adminComments}</div>
+
+          <div className="data-table">
+            {!modifiers.length && (
+              <div className="data-none">No Billing Modifiers</div>
+            )}
+            {modifiers
+              .sort((a, b) => (a.weight < b.weight ? -1 : 1))
+              .map(({ id, startDate, endDate, discountFixed, discountPercentage, extraFixed, extraPercentage, customerComments, adminComments, weight }) => (
+                  <div className="data-row" key={id}>
+                    <div className="dates">{startDate.replace('00:00:00', '')} - {endDate.replace('00:00:00', '')}
+                    </div>
+                    <div className="modifierValue">
+                      {discountFixed ? `Discount: ${discountFixed}` : ''}
+                      {discountPercentage ? `Discount: ${discountPercentage} %` : ''}
+                      {extraFixed ? `Extra: ${extraFixed}` : ''}
+                      {extraPercentage ? `Extra: ${extraPercentage} %` : ''}
+                    </div>
+                    {customerComments ? (<div className="customerComments">{customerComments}</div>) : ('')}
+                    <div className="adminComments">{adminComments}</div>
+                    <div className="delete">
+                      <Mutation
+                        mutation={DeleteBillingModifierMutation}
+                        refetchQueries={[{ query: AllBillingModifiersQuery, variables: { input: { name: group } } }]}
+                      >
+                        {(
+                          deleteBillingModifier,
+                          { loading, called, error, data }
+                        ) => {
+                          if (error) {
+                            return <div>{error.message}</div>;
+                          }
+
+                          if (called) {
+                            return <div>Deleting Billing Modifier...</div>;
+                          }
+
+                          return (
+                            <Button
+                              action={() =>
+                                deleteBillingModifier({
+                                  variables: { input: { id } }
+                                })
+                              }
+                            >
+                              Delete
+                            </Button>
+                          );
+                        }}
+                      </Mutation>
+                    </div>
+                  </div>
+                )
+              )}
           </div>
-        ))
-      }
-    </div>
+
+
     <style jsx>{`
+      .modifiers {
+        width: 100%;
+      }
       .header {
         @media ${bp.wideUp} {
           align-items: center;
@@ -62,16 +103,16 @@ const BillingModifiers = ({ modifiers }) => (
           }
 
           &.dates {
-            width: 15%;
+            width: 35%;
             @media ${bp.extraWideUp} {
-              width: 10%;
+              width: 50%;
             }
           }
 
           &.value {
-            width: 25%;
+            width: 45%;
             @media ${bp.extraWideUp} {
-              width: 20%;
+              width: 45%;
             }
           }
 
@@ -118,7 +159,7 @@ const BillingModifiers = ({ modifiers }) => (
             }
             @media ${bp.wideUp} {
               &.dates {
-                width: 10%;
+                width: 50%;
               }
 
               &.value {
@@ -154,4 +195,4 @@ const BillingModifiers = ({ modifiers }) => (
   </div>
 );
 
-export default BillingModifiers;
+export default AllBillingModifiers;

@@ -3,12 +3,9 @@ import css from 'styled-jsx/css';
 import { bp, color, fontSize } from 'lib/variables';
 
 const BillingGroup = ({ billingGroupCosts }) => {
-  
-  console.log(billingGroupCosts);
 
   const { id, name, currency, availability, hitCost, storageCost, environmentCost, total, modifiers, projects } = billingGroupCosts;
   
-
   return(
     <div className="billingGroup">
       <div className="data-table">
