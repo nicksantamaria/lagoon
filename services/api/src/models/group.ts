@@ -652,7 +652,7 @@ export const Group = (clients): GroupModel => {
     const projects = await getProjectsData(initialProjects, yearMonth);
 
     // Get any modifiers for the month
-    const modifiers = await billingModel.getBillingModifiers(groupInput, month);
+    const modifiers = await billingModel.getBillingModifiers(groupInput, yearMonth);
 
     // Calculate costs based on Availability - All projects in the billing group should have the same availability
     const high = availabilityProjectsCosts(
