@@ -6,6 +6,7 @@ import { Mutation, Query } from 'react-apollo';
 
 import AllBillingModifiersQuery from 'lib/query/AllBillingModifiers';
 import DeleteBillingModifierMutation from 'lib/mutation/DeleteBillingModifier';
+import BillingGroupCostsQuery from 'lib/query/BillingGroupCosts';
 
 import withQueryLoading from 'lib/withQueryLoading';
 import withQueryError from 'lib/withQueryError';
@@ -13,73 +14,83 @@ import withQueryError from 'lib/withQueryError';
 import { bp, color, fontSize } from 'lib/variables';
 import { json } from 'body-parser';
 
-const AllBillingModifiers = ({group, modifiers}) => (
+
+const AllBillingModifiers = ({group, modifiers, month}) => (
+
   <div className="modifiers">
-    <h2>All Billing Modifiers</h2>
+
+    <h2>All Billing Modifiers for Billing Group</h2>
     <div className="header">
+      <label className="weight">Weight</label>
       <label className="dates">Dates</label>
       <label className="value">Value</label>
-      <label className="comments">Comments</label>
     </div>
 
-          <div className="data-table">
-            {!modifiers.length && (
-              <div className="data-none">No Billing Modifiers</div>
-            )}
-            {modifiers
-              .sort((a, b) => (a.weight < b.weight ? -1 : 1))
-              .map(({ id, startDate, endDate, discountFixed, discountPercentage, extraFixed, extraPercentage, customerComments, adminComments, weight }) => (
-                  <div className="data-row" key={id}>
-                    <div className="dates">{startDate.replace('00:00:00', '')} - {endDate.replace('00:00:00', '')}
+      <div className="data-table">
+        {!modifiers.length && (
+          <div className="data-none">No Billing Modifiers</div>
+        )}
+        {modifiers.map(({ id, group, name, startDate, endDate, customerComments, adminComments, weight, discountFixed, discountPercentage, extraFixed, extraPercentage }) => (
+              <div className="data-row" key={id}>
+                  <div className="weight">{weight}</div>
+                  <div className="dates">{startDate.replace('00:00:00', '')} - {endDate.replace('00:00:00', '')}</div>
+                  <div className="value" >
+                    <div>
+                      {discountFixed !== 0 ? `- $${discountFixed}` : ''}
                     </div>
-                    <div className="modifierValue">
-                      {discountFixed ? `Discount: ${discountFixed}` : ''}
-                      {discountPercentage ? `Discount: ${discountPercentage} %` : ''}
-                      {extraFixed ? `Extra: ${extraFixed}` : ''}
-                      {extraPercentage ? `Extra: ${extraPercentage} %` : ''}
+                    <div>
+                      {discountPercentage !== 0 ? `-  ${discountPercentage}%` : ''}
                     </div>
-                    {customerComments ? (<div className="customerComments">{customerComments}</div>) : ('')}
-                    <div className="adminComments">{adminComments}</div>
-                    <div className="delete">
-                      <Mutation
-                        mutation={DeleteBillingModifierMutation}
-                        refetchQueries={[{ query: AllBillingModifiersQuery, variables: { input: { name: group } } }]}
-                      >
-                        {(
-                          deleteBillingModifier,
-                          { loading, called, error, data }
-                        ) => {
-                          if (error) {
-                            return <div>{error.message}</div>;
-                          }
-
-                          if (called) {
-                            return <div>Deleting Billing Modifier...</div>;
-                          }
-
-                          return (
-                            <Button
-                              action={() =>
-                                deleteBillingModifier({
-                                  variables: { input: { id } }
-                                })
-                              }
-                            >
-                              Delete
-                            </Button>
-                          );
-                        }}
-                      </Mutation>
+                    <div>
+                      {extraFixed !== 0 ? `+ $${extraFixed}` : ''}
+                    </div>
+                    <div>
+                      {extraPercentage !== 0 ? `+  ${extraPercentage}%` : ''}
                     </div>
                   </div>
-                )
-              )}
-          </div>
+                  <div className="delete">
+                    <Mutation
+                      mutation={DeleteBillingModifierMutation}
+                      refetchQueries={[
+                        { query: AllBillingModifiersQuery, variables: { input: { name: group.name } } },
+                        { query: BillingGroupCostsQuery, variables: { input: { name: group.name }, month }}
+                      ]}
+                    >
+                      {(
+                        deleteBillingModifier,
+                        { loading, called, error, data }
+                      ) => {
+                        if (error) {
+                          return <div>{error.message}</div>;
+                        }
+
+                        if (called) {
+                          return <div>Deleting Billing Modifier...</div>;
+                        }
+
+                        return (
+                          <Button
+                            action={() =>
+                              deleteBillingModifier({
+                                variables: { input: { id } }
+                              })
+                            }
+                          >
+                            Delete
+                          </Button>
+                        );
+                      }}
+                    </Mutation>
+                  </div>                
+              </div>
+            )
+          )}
+      </div>
 
 
     <style jsx>{`
       .modifiers {
-        width: 100%;
+        width: 35%;
       }
       .header {
         @media ${bp.wideUp} {
@@ -113,13 +124,6 @@ const AllBillingModifiers = ({group, modifiers}) => (
             width: 45%;
             @media ${bp.extraWideUp} {
               width: 45%;
-            }
-          }
-
-          &.comments {
-            width: 45%;
-            @media ${bp.extraWideUp} {
-              width: 55%;
             }
           }
         }
@@ -161,17 +165,8 @@ const AllBillingModifiers = ({group, modifiers}) => (
               &.dates {
                 width: 50%;
               }
-
               &.value {
-                width: 20%;
-              }
-
-              &.comments {
-                align-self: center;
-                width: 25%;
-                @media ${bp.extraWideUp} {
-                  width: 20%;
-                }
+                width: 100px;
               }
             }
           }

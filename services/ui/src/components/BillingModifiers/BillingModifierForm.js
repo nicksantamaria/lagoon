@@ -2,11 +2,19 @@ import React, { useState } from 'react';
 import css from 'styled-jsx/css';
 import Button from 'components/Button';
 
+import moment from 'moment';
+
+import { enGB } from 'date-fns/locale'
+import { DateRangePicker, START_DATE, END_DATE } from 'react-nice-dates'
+
+import 'react-nice-dates/build/style.css'
+
 const BillingModifierForm = ({group, submitHandler}) => {
 
+  const [startDate, setStartDate] = useState()
+  const [endDate, setEndDate] = useState()
+
   const defaultValues = {
-    startDate: '', 
-    endDate: '', 
     modifierType: 'discountFixed',
     modifierValue: '',
     customerComments: '',
@@ -27,49 +35,47 @@ const BillingModifierForm = ({group, submitHandler}) => {
   const formSubmitHandler = () => {
     const variables = { 
       group: { name: group},
-      startDate: values.startDate, 
-      endDate: values.endDate,
-      discountFixed: values.discountFixed, 
-      discountPercentage: values.discountPercentage, 
-      extraFixed: values.extraFixed, 
-      extraPercentage: values.extraPercentage,
+      startDate: moment(startDate).format('YYYY-MM-DD').toString(), 
+      endDate: moment(endDate).format('YYYY-MM-DD').toString(), 
+      discountFixed: values.modifierType === 'discountFixed' ? parseFloat(values.modifierValue) : 0, 
+      discountPercentage: values.modifierType === 'discountPercentage' ? parseFloat(values.modifierValue) : 0, 
+      extraFixed: values.modifierType === 'extraFixed' ? parseFloat(values.modifierValue) : 0,
+      extraPercentage: values.modifierType === 'extraPercentage' ? parseFloat(values.modifierValue) : 0,
       customerComments: values.customerComments,
       adminComments: values.adminComments,
-      weight: values.weight
+      weight: values.weight !== 0 ? parseInt(values.weight): 0
     };
-    console.log(variables);
     submitHandler(variables)
   }
 
   return (
     <div>
-      <div>
-        <label>Start Date (YYYY-MM-DD)</label>
-        <input
-          aria-labelledby="startDate"
-          id="startDate"
-          name="startDate"
-          label='Start Date'
-          className="modifierInput"
-          type="text"
-          value={values.startDate}
-          onChange={handleChange}
-        />
-      </div>
-  
-      <div>
-        <label>End Date (YYYY-MM-DD)</label>
-        <input
-          aria-labelledby="endDate"
-          id="endDate"
-          name="endDate"
-          label='End Date'
-          className="modifierInput"
-          type="text"
-          value={values.endDate}
-          onChange={handleChange}
-        />
-      </div>
+
+      <DateRangePicker
+      startDate={startDate}
+      endDate={endDate}
+      onStartDateChange={setStartDate}
+      onEndDateChange={setEndDate}
+      format='dd MMM yyyy'
+      locale={enGB}
+    >
+      {({ startDateInputProps, endDateInputProps, focus }) => (
+        <div className='date-range'>
+          <input
+            className={'input' + (focus === START_DATE ? ' -focused' : '')}
+            {...startDateInputProps}
+            placeholder='Start date'
+          />
+          <span className='date-range_arrow' />
+          <input
+            className={'input' + (focus === END_DATE ? ' -focused' : '')}
+            {...endDateInputProps}
+            placeholder='End date'
+          />
+        </div>
+      )}
+    </DateRangePicker>
+
   
       <div>
         <label htmlFor="Modifier Type">Type</label>
@@ -135,10 +141,58 @@ const BillingModifierForm = ({group, submitHandler}) => {
           value={values.customerComments}
           placeholder="Customer Messaging"/>
       </div>
+
+      <div>
+        <label>Weight</label>
+        <input
+          aria-labelledby="weight"
+          id='weight'
+          name='weight'
+          label='Weight'
+          className="modifierInput"
+          type="text"
+          onChange={handleChange}
+          value={values.weight}
+          placeholder="0"/>
+      </div>
   
       <Button disabled={!isFormValid} action={formSubmitHandler}>Add</Button>
 
       <style jsx>{`
+      .nice-dates-popover {
+        right: 5%;
+      }
+      .date-range {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .date-range_arrow:before {
+        border-right: 2px solid #d3dde6;
+        border-top: 2px solid #d3dde6;
+        box-sizing: border-box;
+        content: "";
+        display: block;
+        height: 18px;
+        left: 50%;
+        margin-left: -14px;
+        margin-top: -9px;
+        position: absolute;
+        top: 50%;
+        transform: rotate(45deg);
+        width: 18px;
+      }
+      .date-range_arrow {
+        flex-shrink: 0;
+        position: relative;
+        width: 36px;
+      }
+      .date-range .input {
+        width: 100%;
+      }
+      .input.-focused, .input:focus {
+        border-color: #438cd2;
+      }
         .addNew {
           margin-top: 3em;
         }

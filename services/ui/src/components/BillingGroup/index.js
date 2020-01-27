@@ -2,10 +2,29 @@ import React from 'react';
 import css from 'styled-jsx/css';
 import { bp, color, fontSize } from 'lib/variables';
 
+
+const BillingModifiers = ({modifiers}) => modifiers.map(
+  ({ id, startDate, endDate, discountFixed, discountPercentage, extraFixed, extraPercentage, customerComments, adminComments, weight }) => (
+    <div className="modifierValue" key={id}>
+      <div>
+        {discountFixed !== 0 ? `- $${discountFixed}` : ''}
+      </div>
+      <div>
+        {discountPercentage !== 0 ? `-  ${discountPercentage}%` : ''}
+      </div>
+      <div>
+        {extraFixed !== 0 ? `+ $${extraFixed}` : ''}
+      </div>
+      <div>
+        {extraPercentage !== 0 ? `+  ${extraPercentage}%` : ''}
+      </div>
+    </div>
+  )
+);
+
 const BillingGroup = ({ billingGroupCosts }) => {
 
   const { id, name, currency, availability, hitCost, storageCost, environmentCost, total, modifiers, projects } = billingGroupCosts;
-  
   return(
     <div className="billingGroup">
       <div className="data-table">
@@ -13,15 +32,7 @@ const BillingGroup = ({ billingGroupCosts }) => {
         <div className="data-row">
           <div>
             
-          </div>
-        </div>
-
-        <div className="data-row">
-          <div>
-            
-            <h3>{projects[0].month}-{projects[0].year}</h3>
             <h1>{name} - ({currency})</h1><br/>
-            {id}
             <div>Availability: {availability}</div>
             
           </div>
@@ -44,15 +55,11 @@ const BillingGroup = ({ billingGroupCosts }) => {
         </div>
 
         <div className="data-row">
-          <div>modifiers:</div><div className="value"> { modifiers.length == 0 ? 'No Billing Modifiers This Month' : JSON.stringify(modifiers)}</div>
+          <div>modifiers:</div><div className="value"> { modifiers.length == 0 ? 'No Billing Modifiers This Month' : <BillingModifiers modifiers={modifiers} />}</div>
         </div>
 
         <div className="data-row total">
-          <div className="">Total:</div> <div className="value"> ${total}</div>
-        </div>
-        
-        <div className="data-row">
-          <div>projects: [TO DO - PROJECTS]</div>
+          <div className="">Total:</div> <div className="value"> ${total.toFixed(2)}</div>
         </div>
 
       </div>
