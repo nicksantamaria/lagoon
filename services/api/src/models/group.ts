@@ -633,15 +633,28 @@ export const Group = (clients): GroupModel => {
     const { id, currency, name } = group;
     const { month, year } = extractMonthYear(yearMonth);
 
+    // Get all projects in the group
     const groupProjects = await projectsByGroup(group);
 
-    const initialProjects = groupProjects.map(({ id, name, availability }) => ({
+    // Map a subset of project fields to the initial projects array
+    const initialProjects: [{id: string, name: string, availability: string, month: string, year:string}] = 
+    groupProjects.map(({ id, name, availability }) => ({
       id, name, availability, month, year
     }));
 
+    // Check that all projects have availability set
+    const availabilityCheck = initialProjects.reduce((acc, project) => [...acc, ...(project.availability === '' ? [project.name] : [])], []);
+    if(availabilityCheck.length > 0){
+      throw new Error(`Project(s): [${availabilityCheck.join(', ')}] must have availability set.`);
+    }
+
+    // Get the hit, storage, environment data for each project and month
     const projects = await getProjectsData(initialProjects, yearMonth);
+
+    // Get any modifiers for the month
     const modifiers = await billingModel.getBillingModifiers(groupInput, month);
 
+    // Calculate costs based on Availability - All projects in the billing group should have the same availability
     const high = availabilityProjectsCosts(
       projects,
       'HIGH',
@@ -655,10 +668,12 @@ export const Group = (clients): GroupModel => {
       modifiers
     );
 
+    // Mark the returned BillingGroupCosts as 'HIGH' | 'STANDARD'
     const availability = (high as availabilityProjectCostsType).projects
       ? 'HIGH'
       : 'STANDARD';
 
+    // Return the JSON
     return { id, name, currency, availability, ...high, ...standard };
   };
 
