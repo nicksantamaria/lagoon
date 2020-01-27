@@ -13,7 +13,7 @@ export const Sql = {
     knex(BILLING_MODIFIER_TABLE).where('id', '=', id).toString(),
   getAllBillingModifierByBillingGroup: (group_id: string, monthStart: string = undefined, monthEnd: string = undefined) => {
     return monthStart === undefined ?
-      knex(BILLING_MODIFIER_TABLE).where('group_id', '=', group_id).toString() :
+      knex(BILLING_MODIFIER_TABLE).where('group_id', '=', group_id).orderBy('weight', 'asc').toString() :
       knex(BILLING_MODIFIER_TABLE)
         .where('group_id', '=', group_id)
         .where('start_date', '<=', monthEnd) // modifiers that start before the end of the current month

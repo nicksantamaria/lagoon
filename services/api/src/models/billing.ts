@@ -90,8 +90,17 @@ export const getBillingModifiers = async (
     : undefined;
 
   const sql = Sql.getAllBillingModifierByBillingGroup(group.id, monthStart, monthEnd );
-  const result = (await query(sqlClient, sql)) as [BillingModifier];
-  return result.map(modifier => ({ ...modifier, group }));
+  console.log(sql);
+  const result = (await query(sqlClient, sql));
+  return result.map(({weight, discountFixed, discountPercentage, extraFixed, extraPercentage, ...rest}) => 
+    ({ 
+      ...rest, 
+      group, 
+      weight: parseInt(weight, 10),
+      discountFixed: parseFloat(discountFixed), 
+      discountPercentage: parseFloat(discountPercentage), 
+      extraFixed: parseFloat(extraFixed), 
+      extraPercentage: parseFloat(extraPercentage) }));
 };
 
 /**
