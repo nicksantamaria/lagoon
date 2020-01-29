@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useQuery } from '@apollo/react-hooks';
 import * as R from 'ramda';
 import moment from 'moment';
 import { withRouter } from 'next/router';
@@ -9,6 +10,7 @@ import MainLayout from 'layouts/MainLayout';
 import BillingGroupCostsQuery from 'lib/query/BillingGroupCosts';
 import AllBillingModifiersQuery from 'lib/query/AllBillingModifiers';
 
+import BarChart from "components/BillingGroup/BarChart";
 import BillingGroup from "components/BillingGroup";
 import AllBillingModifiers from "components/BillingModifiers/AllBillingModifiers";
 import AddBillingModifier from "components/BillingModifiers/AddBillingModifier";
@@ -44,6 +46,22 @@ const months = [
  */
 export const PageBillingGroup = ({ router }) => {
 
+  const { billingGroupName: group } = router.query;
+  const [costs, setCosts] = useState([])
+
+  const queries = [];
+  for (let i = 0; i <= 5; i++) {
+    queries.push(useQuery(BillingGroupCostsQuery, { variables: { input: { name: group }, month: moment().subtract(i, 'M').format('YYYY-MM').toString() } }))
+  }
+
+  useEffect(() => {
+    for (let i = 0; i <= 5; i++) {
+      if(queries[i].data && queries[i].data.costs) {
+        setCosts([...costs, queries[i].data.costs]);
+      }
+    }
+  }, queries)
+
   const [values, setValues] = useState({ month: currMonth, year: currYear });
   const {month, year} = values;
   const handleChange = e => {
@@ -51,7 +69,6 @@ export const PageBillingGroup = ({ router }) => {
     setValues({...values, [name]: value});
   }
 
-  const { billingGroupName: group } = router.query;
   
   return(
   <>
@@ -59,80 +76,111 @@ export const PageBillingGroup = ({ router }) => {
       <title>{`${router.query.billingGroupName} | Project`}</title>
     </Head>
     <MainLayout>
+
+      <div className="barChart-wrapper">
+        <BarChart data={costs} />
+      </div>
+
+      <div className="monthYear-wrapper">
+        <div className="month">
+          <label htmlFor="month">Month</label>
+          <select
+            id="month"
+            name="month"
+            onChange={handleChange}
+            aria-labelledby="Month"
+            label='Month'
+            className="selectMonth"
+          >
+            {months.map(m => (
+              <option key={`${m.name}-${m.value}`} value={m.value}>
+                {m.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="year">
+          <label htmlFor="Year">Year</label>
+          <select
+            id="year"
+            name="year"
+            onChange={handleChange}
+            aria-labelledby="year"
+            label='Year'
+            className="selectYear"
+          >
+            {years.map(year => (
+              <option key={`${year}`} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       <div className="content-wrapper">
-        
         <div className="leftColumn">
-
-
-        <div className="monthYearContainer">
-          <div className="month">
-            <label htmlFor="month">Month</label>
-            <select
-              id="month"
-              name="month"
-              onChange={handleChange}
-              aria-labelledby="Month"
-              label='Month'
-              className="selectMonth"
-            >
-              {months.map(m => (
-                <option key={`${m.name}-${m.value}`} value={m.value}>
-                  {m.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-
-          <div className="year">
-            <label htmlFor="Year">Year</label>
-            <select
-              id="year"
-              name="year"
-              onChange={handleChange}
-              aria-labelledby="year"
-              label='Year'
-              className="selectYear"
-            >
-              {years.map(year => (
-                <option key={`${year}`} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          </div>
           <Query query={BillingGroupCostsQuery} variables={{ input: { name: group }, month: `${year}-${month}` }} >
             {R.compose(withQueryLoading, withQueryError)(
-              ({ data: { costs } }) => <BillingGroup billingGroupCosts={costs} />
+              ({ data: { costs } }) => {
+                return(<BillingGroup billingGroupCosts={costs} />);
+              }
             )}
           </Query>
-
-          
         </div>
-
-        
-        {<Query query={AllBillingModifiersQuery} variables={{ input: { name: group } }} >
-            {R.compose(withQueryLoading, withQueryError)(
-              ({ data: { allBillingModifiers: modifiers } }) => <AllBillingModifiers modifiers={modifiers} group={group} month={`${year}-${month}`} />
-            )}
-          </Query>}
-          <AddBillingModifier group={group} month={`${year}-${month}`} />
-        
-
-
-
-
+        <div className="rightColumn">
+          {<Query query={AllBillingModifiersQuery} variables={{ input: { name: group } }} >
+              {R.compose(withQueryLoading, withQueryError)(
+                ({ data: { allBillingModifiers: modifiers } }) => <AllBillingModifiers modifiers={modifiers} group={group} month={`${year}-${month}`} />
+              )}
+            </Query>}
+            <AddBillingModifier group={group} month={`${year}-${month}`} />
+        </div>
       </div>
     </MainLayout>
     <style jsx>{`
+
+      .barChart-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: center;
+        height: 250px;
+        padding: 0 40px 0 15px;
+        margin: 0 0 10px;
+        min-height: 150px;
+        @media ${bp.tabletUp} {
+          margin: 15px 0 10px;
+        }
+      }
+
+      .monthYear-wrapper {
+        display: flex;
+        width: 100%;
+        margin: 0 10px;
+        @media ${bp.tabletUp} {
+          margin: 0 1rem;
+          width: 75%;
+        }
+        @media ${bp.wideUp} {
+          margin: 0 1rem;
+          width: 50%;
+        }
+      }
+
       .content-wrapper {
         @media ${bp.tabletUp} {
           display: flex;
           justify-content: space-between;
         }
-        margin: 1rem;
+      }
+
+      .leftColumn, .rightColumn {
+        width: 100%;
+        @media ${bp.tabletUp} {
+          width: 50%;
+          margin: 1rem;
+        }
       }
 
       .monthYearContainer {

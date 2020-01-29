@@ -19,7 +19,7 @@ const AllBillingModifiers = ({group, modifiers, month}) => (
 
   <div className="modifiers">
 
-    <h2>All Billing Modifiers for Billing Group</h2>
+    <h2>All Billing Modifiers</h2>
     <div className="header">
       <label className="weight">Weight</label>
       <label className="dates">Dates</label>
@@ -31,67 +31,69 @@ const AllBillingModifiers = ({group, modifiers, month}) => (
           <div className="data-none">No Billing Modifiers</div>
         )}
         {modifiers.map(({ id, group, name, startDate, endDate, customerComments, adminComments, weight, discountFixed, discountPercentage, extraFixed, extraPercentage }) => (
-              <div className="data-row" key={id}>
-                  <div className="weight">{weight}</div>
-                  <div className="dates">{startDate.replace('00:00:00', '')} - {endDate.replace('00:00:00', '')}</div>
-                  <div className="value" >
-                    <div>
-                      {discountFixed !== 0 ? `- $${discountFixed}` : ''}
-                    </div>
-                    <div>
-                      {discountPercentage !== 0 ? `-  ${discountPercentage}%` : ''}
-                    </div>
-                    <div>
-                      {extraFixed !== 0 ? `+ $${extraFixed}` : ''}
-                    </div>
-                    <div>
-                      {extraPercentage !== 0 ? `+  ${extraPercentage}%` : ''}
-                    </div>
-                  </div>
-                  <div className="delete">
-                    <Mutation
-                      mutation={DeleteBillingModifierMutation}
-                      refetchQueries={[
-                        { query: AllBillingModifiersQuery, variables: { input: { name: group.name } } },
-                        { query: BillingGroupCostsQuery, variables: { input: { name: group.name }, month }}
-                      ]}
-                    >
-                      {(
-                        deleteBillingModifier,
-                        { loading, called, error, data }
-                      ) => {
-                        if (error) {
-                          return <div>{error.message}</div>;
-                        }
-
-                        if (called) {
-                          return <div>Deleting Billing Modifier...</div>;
-                        }
-
-                        return (
-                          <Button
-                            action={() =>
-                              deleteBillingModifier({
-                                variables: { input: { id } }
-                              })
-                            }
-                          >
-                            Delete
-                          </Button>
-                        );
-                      }}
-                    </Mutation>
-                  </div>                
+          <div className="data-row" key={id}>
+            <div className="weight">{weight}</div>
+            <div className="dates">{startDate.replace('00:00:00', '')} - {endDate.replace('00:00:00', '')}</div>
+            <div className="value" >
+              <div>
+                {discountFixed !== 0 ? `- $${discountFixed}` : ''}
               </div>
-            )
-          )}
+              <div>
+                {discountPercentage !== 0 ? `-  ${discountPercentage}%` : ''}
+              </div>
+              <div>
+                {extraFixed !== 0 ? `+ $${extraFixed}` : ''}
+              </div>
+              <div>
+                {extraPercentage !== 0 ? `+  ${extraPercentage}%` : ''}
+              </div>
+            </div>
+            <div className="delete">
+              <Mutation
+                mutation={DeleteBillingModifierMutation}
+                refetchQueries={[
+                  { query: AllBillingModifiersQuery, variables: { input: { name: group.name } } },
+                  { query: BillingGroupCostsQuery, variables: { input: { name: group.name }, month }}
+                ]}
+              >
+                {(
+                  deleteBillingModifier,
+                  { loading, called, error, data }
+                ) => {
+                  if (error) {
+                    return <div>{error.message}</div>;
+                  }
+
+                  if (called) {
+                    return <div>Deleting Billing Modifier...</div>;
+                  }
+
+                  return (
+                    <Button
+                      action={() =>
+                        deleteBillingModifier({
+                          variables: { input: { id } }
+                        })
+                      }
+                    >
+                      Delete
+                    </Button>
+                  );
+                }}
+              </Mutation>
+            </div>                
+          </div>
+          )
+        )}
       </div>
 
 
     <style jsx>{`
+
       .modifiers {
-        width: 35%;
+        padding: 30px 20px;
       }
+      
       .header {
         @media ${bp.wideUp} {
           align-items: center;

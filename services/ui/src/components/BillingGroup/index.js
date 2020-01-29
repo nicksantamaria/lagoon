@@ -5,18 +5,23 @@ import { bp, color, fontSize } from 'lib/variables';
 
 const BillingModifiers = ({modifiers}) => modifiers.map(
   ({ id, startDate, endDate, discountFixed, discountPercentage, extraFixed, extraPercentage, customerComments, adminComments, weight }) => (
-    <div className="modifierValue" key={id}>
-      <div>
-        {discountFixed !== 0 ? `- $${discountFixed}` : ''}
-      </div>
-      <div>
-        {discountPercentage !== 0 ? `-  ${discountPercentage}%` : ''}
-      </div>
-      <div>
-        {extraFixed !== 0 ? `+ $${extraFixed}` : ''}
-      </div>
-      <div>
-        {extraPercentage !== 0 ? `+  ${extraPercentage}%` : ''}
+    <div className="data-row">
+      <div>modifiers:</div>
+      <div className="value">
+        <div className="modifierValue" key={id}>
+          <div>
+            {discountFixed !== 0 ? `- $${discountFixed}` : ''}
+          </div>
+          <div>
+            {discountPercentage !== 0 ? `-  ${discountPercentage}%` : ''}
+          </div>
+          <div>
+            {extraFixed !== 0 ? `+ $${extraFixed}` : ''}
+          </div>
+          <div>
+            {extraPercentage !== 0 ? `+  ${extraPercentage}%` : ''}
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -32,8 +37,9 @@ const BillingGroup = ({ billingGroupCosts }) => {
         <div className="data-row">
           <div>
             
-            <h1>{name} - ({currency})</h1><br/>
+            <h1>{name}</h1>
             <div>Availability: {availability}</div>
+            <div>Currency: ({currency})</div>
             
           </div>
         </div>
@@ -53,11 +59,7 @@ const BillingGroup = ({ billingGroupCosts }) => {
         <div className="data-row">
           <div>Prod:</div><div className="value"> ${environmentCost.prod}</div><br/>
         </div>
-
-        <div className="data-row">
-          <div>modifiers:</div><div className="value"> { modifiers.length == 0 ? 'No Billing Modifiers This Month' : <BillingModifiers modifiers={modifiers} />}</div>
-        </div>
-
+        { modifiers.length > 0 ? <BillingModifiers modifiers={modifiers} /> : ''}
         <div className="data-row total">
           <div className="">Total:</div> <div className="value"> ${total.toFixed(2)}</div>
         </div>
