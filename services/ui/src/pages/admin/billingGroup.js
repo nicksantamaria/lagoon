@@ -18,6 +18,9 @@ import AddBillingModifier from "components/BillingModifiers/AddBillingModifier";
 import Breadcrumbs from 'components/Breadcrumbs';
 import withQueryLoading from 'lib/withQueryLoading';
 import withQueryError from 'lib/withQueryError';
+
+import { AuthContext, adminAuthChecker } from '../../lib/Authenticator';
+
 import { bp, color } from 'lib/variables';
 
 
@@ -77,66 +80,78 @@ export const PageBillingGroup = ({ router }) => {
     </Head>
     <MainLayout>
 
-      <div className="barChart-wrapper">
-        <BarChart data={costs} />
-      </div>
-
-      <div className="monthYear-wrapper">
-        <div className="month">
-          <label htmlFor="month">Month</label>
-          <select
-            id="month"
-            name="month"
-            onChange={handleChange}
-            aria-labelledby="Month"
-            label='Month'
-            className="selectMonth"
-          >
-            {months.map(m => (
-              <option key={`${m.name}-${m.value}`} value={m.value}>
-                {m.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="year">
-          <label htmlFor="Year">Year</label>
-          <select
-            id="year"
-            name="year"
-            onChange={handleChange}
-            aria-labelledby="year"
-            label='Year'
-            className="selectYear"
-          >
-            {years.map(year => (
-              <option key={`${year}`} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="content-wrapper">
-        <div className="leftColumn">
-          <Query query={BillingGroupCostsQuery} variables={{ input: { name: group }, month: `${year}-${month}` }} >
-            {R.compose(withQueryLoading, withQueryError)(
-              ({ data: { costs } }) => {
-                return(<BillingGroup billingGroupCosts={costs} />);
-              }
-            )}
-          </Query>
-        </div>
-        <div className="rightColumn">
-          {<Query query={AllBillingModifiersQuery} variables={{ input: { name: group } }} >
-              {R.compose(withQueryLoading, withQueryError)(
-                ({ data: { allBillingModifiers: modifiers } }) => <AllBillingModifiers modifiers={modifiers} group={group} month={`${year}-${month}`} />
-              )}
-            </Query>}
-            <AddBillingModifier group={group} month={`${year}-${month}`} />
-        </div>
-      </div>
+      <AuthContext.Consumer>
+        {auth => {
+          if (adminAuthChecker(auth)) {
+            return (
+              <div>
+                <div className="barChart-wrapper">
+                  <BarChart data={costs} />
+                </div>
+          
+                <div className="monthYear-wrapper">
+                  <div className="month">
+                    <label htmlFor="month">Month</label>
+                    <select
+                      id="month"
+                      name="month"
+                      onChange={handleChange}
+                      aria-labelledby="Month"
+                      label='Month'
+                      className="selectMonth"
+                    >
+                      {months.map(m => (
+                        <option key={`${m.name}-${m.value}`} value={m.value}>
+                          {m.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="year">
+                    <label htmlFor="Year">Year</label>
+                    <select
+                      id="year"
+                      name="year"
+                      onChange={handleChange}
+                      aria-labelledby="year"
+                      label='Year'
+                      className="selectYear"
+                    >
+                      {years.map(year => (
+                        <option key={`${year}`} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+          
+                <div className="content-wrapper">
+                  <div className="leftColumn">
+                    <Query query={BillingGroupCostsQuery} variables={{ input: { name: group }, month: `${year}-${month}` }} >
+                      {R.compose(withQueryLoading, withQueryError)(
+                        ({ data: { costs } }) => {
+                          return(<BillingGroup billingGroupCosts={costs} />);
+                        }
+                      )}
+                    </Query>
+                  </div>
+                  <div className="rightColumn">
+                    {<Query query={AllBillingModifiersQuery} variables={{ input: { name: group } }} >
+                        {R.compose(withQueryLoading, withQueryError)(
+                          ({ data: { allBillingModifiers: modifiers } }) => <AllBillingModifiers modifiers={modifiers} group={group} month={`${year}-${month}`} />
+                        )}
+                      </Query>}
+                      <AddBillingModifier group={group} month={`${year}-${month}`} />
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          
+          return (<div className="content-wrapper"><div className="content">Seems that you do not have permissions to access this resource.</div></div>);
+        }}
+      </AuthContext.Consumer>
     </MainLayout>
     <style jsx>{`
 
@@ -173,6 +188,10 @@ export const PageBillingGroup = ({ router }) => {
           display: flex;
           justify-content: space-between;
         }
+      }
+      .content {
+        padding: 32px calc((100vw / 16) * 1);
+        width: 100%;
       }
 
       .leftColumn, .rightColumn {
