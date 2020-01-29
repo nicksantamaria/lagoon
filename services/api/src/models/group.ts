@@ -674,7 +674,7 @@ export const Group = (clients): GroupModel => {
       : 'STANDARD';
 
     // Return the JSON
-    return { id, name, currency, availability, ...high, ...standard };
+    return { id, name, yearMonth, currency, availability, ...high, ...standard };
   };
 
   const allBillingGroupCosts = async yearMonth => {

@@ -9,7 +9,6 @@ const BillingGroups = ({ billingGroups }) => (
     <div className="header">
       <label className="name">Name</label>
       <label className="currency">Currency</label>
-      <label className="billingGroupId">ID</label>
     </div>
     <div className="data-table">
       {!billingGroups.length && <div className="data-none">No BillingGroups</div>}
@@ -19,7 +18,6 @@ const BillingGroups = ({ billingGroups }) => (
             <div className="data-row" key={id}>
               <div className="name">{name}</div>
               <div className="currency">{currency}</div>
-              <div className="billingGroupId">{id}</div>
             </div>
           </BillingGroupLink>
         ))
@@ -48,23 +46,16 @@ const BillingGroups = ({ billingGroups }) => (
           }
 
           &.name {
-            width: 15%;
+            width: 35%;
             @media ${bp.extraWideUp} {
-              width: 10%;
+              width: 35%;
             }
           }
 
           &.currency {
-            width: 25%;
+            width: 50%;
             @media ${bp.extraWideUp} {
-              width: 20%;
-            }
-          }
-
-          &.billingGroupId {
-            width: 45%;
-            @media ${bp.extraWideUp} {
-              width: 55%;
+              width: 50%;
             }
           }
         }
@@ -104,31 +95,11 @@ const BillingGroups = ({ billingGroups }) => (
             }
             @media ${bp.wideUp} {
               &.name {
-                width: 10%;
+                width: 35%;
               }
 
               &.currency {
-                width: 20%;
-              }
-
-              &.costs {
-                align-self: center;
-                width: 25%;
-                @media ${bp.extraWideUp} {
-                  width: 20%;
-                }
-              }
-            }
-
-            &.billingGroupId {
-              word-break: break-word;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              @media ${bp.wideUp} {
-                width: 45%;
-              }
-              @media ${bp.extraWideUp} {
-                width: 50%;
+                width: 65%;
               }
             }
           }

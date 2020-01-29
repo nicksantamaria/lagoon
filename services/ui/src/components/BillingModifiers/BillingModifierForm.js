@@ -156,9 +156,16 @@ const BillingModifierForm = ({group, submitHandler}) => {
           placeholder="0"/>
       </div>
   
-      <Button disabled={!isFormValid} action={formSubmitHandler}>Add</Button>
+      <div className="btnContainer">
+        <Button disabled={!isFormValid} action={formSubmitHandler}>Add</Button>
+      </div>
 
       <style jsx>{`
+
+      .btnContainer {
+        width: 100%;
+        text-align: right;
+      }
       .nice-dates-popover {
         right: 5%;
       }
