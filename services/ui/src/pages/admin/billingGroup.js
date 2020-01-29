@@ -22,6 +22,7 @@ import withQueryError from 'lib/withQueryError';
 import { AuthContext, adminAuthChecker } from '../../lib/Authenticator';
 
 import { bp, color } from 'lib/variables';
+import Button from 'components/Button';
 
 
 const yearsToShow = 2;
@@ -58,11 +59,19 @@ export const PageBillingGroup = ({ router }) => {
   }
 
   useEffect(() => {
-    for (let i = 0; i <= 5; i++) {
-      if(queries[i].data && queries[i].data.costs) {
-        setCosts([...costs, queries[i].data.costs]);
+    const result = queries.map(query => { 
+      if (query && query.data && query.data.costs) {
+        return (query.data.costs)
       }
-    }
+      return ({total: 0});
+    });
+
+    // for (let i = 0; i <= 5; i++) {
+    //   if(queries[i].data && queries[i].data.costs) {
+    //     setCosts([...costs, queries[i].data.costs]);
+    //   }
+    // }
+    setCosts(result);
   }, queries)
 
   const [values, setValues] = useState({ month: currMonth, year: currYear });
@@ -72,6 +81,19 @@ export const PageBillingGroup = ({ router }) => {
     setValues({...values, [name]: value});
   }
 
+  const prevSubmitHandler = () => {
+    const dateTime = `${values.year}-${values.month}-01 0:00:00.000`;
+    const date = new Date(dateTime);
+    const [year, month] = moment(date).subtract(1, 'M').format('YYYY-MM').toString().split('-');
+    setValues({month, year});
+  }
+
+  const nextSubmitHandler = () => {
+    const dateTime = `${values.year}-${values.month}-01 0:00:00.000`;
+    const date = new Date(dateTime);
+    const [year, month] = moment(date).add(1, 'M').format('YYYY-MM').toString().split('-');
+    setValues({month, year});
+  }
   
   return(
   <>
@@ -99,6 +121,7 @@ export const PageBillingGroup = ({ router }) => {
                       aria-labelledby="Month"
                       label='Month'
                       className="selectMonth"
+                      value={values.month}
                     >
                       {months.map(m => (
                         <option key={`${m.name}-${m.value}`} value={m.value}>
@@ -116,6 +139,7 @@ export const PageBillingGroup = ({ router }) => {
                       aria-labelledby="year"
                       label='Year'
                       className="selectYear"
+                      value={values.year}
                     >
                       {years.map(year => (
                         <option key={`${year}`} value={year}>
@@ -135,6 +159,10 @@ export const PageBillingGroup = ({ router }) => {
                         }
                       )}
                     </Query>
+                    <div className="btnWrapper">
+                      <Button action={prevSubmitHandler}>Previous Month</Button>
+                      <Button disabled={(values.year >= currYear && values.month >= currMonth) ? true: false} action={nextSubmitHandler}>Next Month</Button>
+                    </div>
                   </div>
                   <div className="rightColumn">
                     {<Query query={AllBillingModifiersQuery} variables={{ input: { name: group } }} >
@@ -154,6 +182,15 @@ export const PageBillingGroup = ({ router }) => {
       </AuthContext.Consumer>
     </MainLayout>
     <style jsx>{`
+
+      .btnWrapper {
+        padding: 20px 0 0 0;
+        display: flex;
+        justify-content: space-between;
+        .btn {
+          padding: 0 10px 0;
+        }
+      }
 
       .barChart-wrapper {
         display: flex;

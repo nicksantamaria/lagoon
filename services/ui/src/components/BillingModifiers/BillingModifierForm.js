@@ -52,29 +52,29 @@ const BillingModifierForm = ({group, submitHandler}) => {
     <div>
 
       <DateRangePicker
-      startDate={startDate}
-      endDate={endDate}
-      onStartDateChange={setStartDate}
-      onEndDateChange={setEndDate}
-      format='dd MMM yyyy'
-      locale={enGB}
-    >
-      {({ startDateInputProps, endDateInputProps, focus }) => (
-        <div className='date-range'>
-          <input
-            className={'input' + (focus === START_DATE ? ' -focused' : '')}
-            {...startDateInputProps}
-            placeholder='Start date'
-          />
-          <span className='date-range_arrow' />
-          <input
-            className={'input' + (focus === END_DATE ? ' -focused' : '')}
-            {...endDateInputProps}
-            placeholder='End date'
-          />
-        </div>
-      )}
-    </DateRangePicker>
+        startDate={startDate}
+        endDate={endDate}
+        onStartDateChange={setStartDate}
+        onEndDateChange={setEndDate}
+        format='dd MMM yyyy'
+        locale={enGB}
+      >
+        {({ startDateInputProps, endDateInputProps, focus }) => (
+          <div className='date-range'>
+            <input
+              className={'input' + (focus === START_DATE ? ' -focused' : '')}
+              {...startDateInputProps}
+              placeholder='Start date'
+            />
+            <span className='date-range_arrow' />
+            <input
+              className={'input' + (focus === END_DATE ? ' -focused' : '')}
+              {...endDateInputProps}
+              placeholder='End date'
+            />
+          </div>
+        )}
+      </DateRangePicker>
 
   
       <div>

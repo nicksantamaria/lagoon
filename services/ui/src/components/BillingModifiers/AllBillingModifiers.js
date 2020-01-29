@@ -92,6 +92,10 @@ const AllBillingModifiers = ({group, modifiers, month}) => (
 
       .modifiers {
         padding: 30px 20px;
+        background-color: #fff;
+        border: 1px solid #f5f6fa;
+        border-radius: 3px;
+        box-shadow: 0px 4px 8px 0px rgba(0,0,0,0.03);
       }
       
       .header {
