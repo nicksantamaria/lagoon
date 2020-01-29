@@ -9,51 +9,67 @@ import BillingGroups from '../../components/BillingGroups';
 import withQueryLoading from '../../lib/withQueryLoading';
 import withQueryError from '../../lib/withQueryError';
 
+import { AuthContext, adminAuthChecker } from '../../lib/Authenticator';
+
 import { bp, color } from '../../lib/variables';
 
 /**
  * Displays the backups page, given the name of an openshift project.
  */
-export const PageAdmin = () => (
-  <>
-    <Head>
-      <title>{` Admin | Billing Groups`}</title>
-    </Head>
-    <Query query={AllBillingGroupsQuery} >
-    {R.compose(
-        withQueryLoading,
-        withQueryError
-      )(({ data: { allGroups: billingGroups} }) => {
-        return(
-          <MainLayout>
-            <div className="content-wrapper">
-              <div className="content">
-                <BillingGroups billingGroups={billingGroups} />
-              </div>
-            </div>
-            <style jsx>{`
-              .content-wrapper {
-                @media ${bp.tabletUp} {
-                  display: flex;
-                  padding: 0;
+export const PageAdmin = () => {
+  return(
+    <>
+      <Head>
+        <title>{` Admin | Billing Groups`}</title>
+      </Head>
+
+      <MainLayout>
+        <div className="content-wrapper">
+          <div className="content">
+
+            <AuthContext.Consumer>
+              {auth => {
+                if (adminAuthChecker(auth)) {
+                  return (
+                    <Query query={AllBillingGroupsQuery}>
+                      {R.compose(
+                        withQueryLoading,
+                        withQueryError
+                      )(({ data: { allGroups: billingGroups } }) => (
+                        <BillingGroups billingGroups={billingGroups} />
+                      ))}
+                    </Query>
+                  );
                 }
-              }
+                
+                return (<div>Seems that you do not have permissions to access this resource.</div>);
+              }}
+            </AuthContext.Consumer>
 
-              .content {
-                padding: 32px calc((100vw / 16) * 1);
-                width: 100%;
-              }
+          </div>
+        </div>
+        <style jsx>{`
+          .content-wrapper {
+            @media ${bp.tabletUp} {
+              display: flex;
+              padding: 0;
+            }
+          }
 
-              .notification {
-                background-color: ${color.lightBlue};
-                color: ${color.white};
-                padding: 10px 20px;
-              }
-            `}</style>
-          </MainLayout>
-          )})}
-    </Query>
-  </>
-);
+          .content {
+            padding: 32px calc((100vw / 16) * 1);
+            width: 100%;
+          }
+
+          .notification {
+            background-color: ${color.lightBlue};
+            color: ${color.white};
+            padding: 10px 20px;
+          }
+        `}</style>
+      </MainLayout>
+    </>
+  )
+};
 
 export default PageAdmin;
