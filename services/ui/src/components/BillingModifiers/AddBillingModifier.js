@@ -43,7 +43,12 @@ const AddBillingModifier = ({ group, month }) => {
 
       <style jsx>{`
         .addBillingModifier {
-          margin: 1rem 2rem 2rem;
+          margin: 1rem 0;
+          padding: 30px 20px;
+          background-color: #fff;
+          border: 1px solid #f5f6fa;
+          border-radius: 3px;
+          box-shadow: 0px 4px 8px 0px rgba(0,0,0,0.03);
         }
         .error {
           color: #e64545;
