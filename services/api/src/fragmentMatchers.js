@@ -3,11 +3,12 @@
 
 const fetch = require('node-fetch');
 const fs = require('fs');
+const TOKEN = ''; // set this prior to running
 
 fetch(`http://localhost:3000/graphql`, {
   method: 'POST',
   headers: {
-    Authorization: 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1Nzk0NjYwNjMsInJvbGUiOiJhZG1pbiIsImlzcyI6ImF1dG8taWRsZXIiLCJhdWQiOiJhcGkuZGV2Iiwic3ViIjoiYXV0by1pZGxlciJ9.1bnw-pnohRnmoeveLLmb8ij8na_sU3LFVkcpoQDIQUc',
+    Authorization: `Bearer ${TOKEN}`,
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
